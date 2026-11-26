@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoMech Pro – Interaktívny sprievodca opravami a dielmi</title>
+  <title>AutoMech Pro – Poruchy, opravy, poistky, schémy a diely</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -34,29 +34,34 @@
 </head>
 <body class="min-h-screen flex flex-col">
   <header class="border-b border-slate-800 bg-slate-950/90 sticky top-0 z-20 backdrop-blur">
-    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 font-extrabold flex items-center justify-center text-sm">AM</div>
         <div>
           <div class="font-bold text-base leading-tight">AutoMech Pro</div>
-          <div class="text-xs text-slate-400">Komplet ročníky • Motorizácie • Diely</div>
+          <div class="text-xs text-slate-400">Poruchy • Opravy • Poistky • Schémy • Diely</div>
         </div>
       </div>
       <span class="text-xs px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-medium">
-        Všetky ročníky + vlastný motor
+        Komplet dielenský sprievodca
       </span>
     </div>
   </header>
 
-  <main class="max-w-5xl w-full mx-auto px-4 py-6 space-y-6 flex-1">
+  <main class="max-w-6xl w-full mx-auto px-4 py-6 space-y-6 flex-1">
+    <!-- Krok 1: Výber vozidla, ročníka a motorizácie -->
     <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
         <div>
-          <div class="text-xs uppercase tracking-wider text-amber-400 font-semibold">Krok 1 • Výber vozidla</div>
+          <div class="text-xs uppercase tracking-wider text-amber-400 font-semibold">Krok 1 • Výber vozidla a motora</div>
           <h1 class="text-lg sm:text-xl font-bold">Značka, model, ročník a motorizácia</h1>
         </div>
-        <input id="brandFilter" type="text" placeholder="Filtrovať značku (napr. Škoda, VW, BMW, Opel)..."
-          class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 w-full sm:w-72" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full md:w-auto">
+          <input id="brandFilter" type="text" placeholder="Hľadať značku..."
+            class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500" />
+          <input id="engineFilter" type="text" placeholder="Hľadať motorizáciu / kód (napr. 1.9 TDI, AXX, 2.0)..."
+            class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500" />
+        </div>
       </div>
 
       <div id="brandGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2.5"></div>
@@ -67,357 +72,520 @@
           <select id="modelSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500"></select>
         </div>
         <div>
-          <label class="block text-xs text-slate-400 mb-1">Motorizácia a kód motora</label>
+          <label class="block text-xs text-slate-400 mb-1">Motorizácia (všetky dostupné verzie)</label>
           <select id="engineSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500"></select>
-        </div>
-      </div>
-
-      <div id="customEngineBox" class="hidden grid-cols-1 sm:grid-cols-3 gap-2.5 bg-slate-950/90 border border-amber-500/30 rounded-xl p-3">
-        <div class="sm:col-span-2">
-          <label class="block text-xs text-amber-300 mb-1">Zadajte vlastnú motorizáciu / výkon / kód motora</label>
-          <input id="customEngineInput" type="text" placeholder="Napr. 1.9 TDI 81 kW AHF alebo 2.0 HDI 100 kW RHR..."
-            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500" />
-        </div>
-        <div class="flex items-end">
-          <button id="applyCustomEngineBtn" type="button"
-            class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm rounded-lg px-3 py-2 transition">
-            Použiť motor
-          </button>
         </div>
       </div>
 
       <div id="activeVehicleBanner" class="rounded-xl bg-slate-950/80 border border-slate-800 px-3.5 py-2.5 text-xs sm:text-sm flex flex-wrap items-center justify-between gap-2"></div>
     </section>
 
+    <!-- Krok 2: Profil ročníka, servisný plán a kvapaliny -->
+    <section id="eraServiceSection" class="grid grid-cols-1 lg:grid-cols-2 gap-5"></section>
+
+    <!-- Krok 3: Uzly vozidla, poruchy, opravy, poistky, schémy a diely -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-      <div class="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
+      <div class="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
         <div class="flex items-center justify-between">
-          <h2 class="font-bold text-base">Interaktívna schéma uzlov</h2>
-          <span class="text-xs text-slate-400">Ťuknite na bod v schéme</span>
+          <h2 class="font-bold text-base">Uzly vozidla a schéma</h2>
+          <span class="text-xs text-slate-400">Ťuknite na uzol</span>
         </div>
 
         <div class="blueprint-grid rounded-xl border border-slate-800 p-3">
-          <svg viewBox="0 0 600 240" class="w-full h-auto select-none">
-            <path d="M70 165 L105 110 L215 95 L320 92 L465 102 L530 135 L535 168 L480 168 A34 34 0 0 0 412 168 L188 168 A34 34 0 0 0 120 168 L70 165 Z"
+          <svg viewBox="0 0 600 250" class="w-full h-auto select-none">
+            <path d="M65 170 L102 112 L212 96 L325 93 L472 103 L535 138 L540 172 L485 172 A34 34 0 0 0 417 172 L185 172 A34 34 0 0 0 117 172 L65 170 Z"
                   fill="rgba(30,41,59,0.55)" stroke="#64748b" stroke-width="2.5" />
-            <path d="M135 110 L218 65 L355 65 L435 102 Z" fill="rgba(51,65,85,0.35)" stroke="#94a3b8" stroke-width="2" />
-            <circle cx="154" cy="168" r="30" fill="#0f172a" stroke="#cbd5e1" stroke-width="3" />
-            <circle cx="154" cy="168" r="13" fill="#1e293b" stroke="#64748b" stroke-width="2" />
-            <circle cx="446" cy="168" r="30" fill="#0f172a" stroke="#cbd5e1" stroke-width="3" />
-            <circle cx="446" cy="168" r="13" fill="#1e293b" stroke="#64748b" stroke-width="2" />
+            <path d="M132 112 L215 66 L358 66 L438 103 Z" fill="rgba(51,65,85,0.35)" stroke="#94a3b8" stroke-width="2" />
+            <circle cx="151" cy="172" r="30" fill="#0f172a" stroke="#cbd5e1" stroke-width="3" />
+            <circle cx="151" cy="172" r="13" fill="#1e293b" stroke="#64748b" stroke-width="2" />
+            <circle cx="451" cy="172" r="30" fill="#0f172a" stroke="#cbd5e1" stroke-width="3" />
+            <circle cx="451" cy="172" r="13" fill="#1e293b" stroke="#64748b" stroke-width="2" />
 
             <g class="cursor-pointer" onclick="selectPart('battery')">
-              <circle cx="122" cy="132" r="11" fill="#f59e0b" opacity="0.25" />
-              <circle cx="122" cy="132" r="6" fill="#f59e0b" />
-              <text x="122" y="116" text-anchor="middle" fill="#fde68a" font-size="11" font-family="Inter">Batéria</text>
+              <circle cx="115" cy="134" r="10" fill="#f59e0b" opacity="0.28" />
+              <circle cx="115" cy="134" r="5.5" fill="#f59e0b" />
+              <text x="115" y="118" text-anchor="middle" fill="#fde68a" font-size="10.5" font-family="Inter">Batéria</text>
             </g>
 
             <g class="cursor-pointer" onclick="selectPart('engine')">
-              <circle cx="205" cy="132" r="11" fill="#38bdf8" opacity="0.25" />
-              <circle cx="205" cy="132" r="6" fill="#38bdf8" />
-              <text x="205" y="116" text-anchor="middle" fill="#bae6fd" font-size="11" font-family="Inter">Motor / Snímače</text>
+              <circle cx="205" cy="132" r="10" fill="#38bdf8" opacity="0.28" />
+              <circle cx="205" cy="132" r="5.5" fill="#38bdf8" />
+              <text x="205" y="116" text-anchor="middle" fill="#bae6fd" font-size="10.5" font-family="Inter">Motor/Rozvody</text>
             </g>
 
-            <g class="cursor-pointer" onclick="selectPart('brakes')">
-              <circle cx="446" cy="168" r="11" fill="#34d399" opacity="0.25" />
-              <circle cx="446" cy="168" r="6" fill="#34d399" />
-              <text x="446" y="212" text-anchor="middle" fill="#a7f3d0" font-size="11" font-family="Inter">Brzdy / Podvozok</text>
+            <g class="cursor-pointer" onclick="selectPart('cooling')">
+              <circle cx="150" cy="146" r="9" fill="#22d3ee" opacity="0.25" />
+              <circle cx="150" cy="146" r="5" fill="#22d3ee" />
+              <text x="82" y="152" text-anchor="middle" fill="#a5f3fc" font-size="10" font-family="Inter">Chladenie</text>
+            </g>
+
+            <g class="cursor-pointer" onclick="selectPart('drivetrain')">
+              <circle cx="255" cy="166" r="10" fill="#c084fc" opacity="0.25" />
+              <circle cx="255" cy="166" r="5.5" fill="#c084fc" />
+              <text x="255" y="192" text-anchor="middle" fill="#e9d5ff" font-size="10.5" font-family="Inter">Spojka/Pohon</text>
             </g>
 
             <g class="cursor-pointer" onclick="selectPart('exhaust')">
-              <circle cx="315" cy="152" r="11" fill="#f87171" opacity="0.25" />
-              <circle cx="315" cy="152" r="6" fill="#f87171" />
-              <text x="315" y="140" text-anchor="middle" fill="#fecaca" font-size="11" font-family="Inter">Výfuk / EGR / DPF</text>
+              <circle cx="338" cy="155" r="10" fill="#f87171" opacity="0.25" />
+              <circle cx="338" cy="155" r="5.5" fill="#f87171" />
+              <text x="338" y="140" text-anchor="middle" fill="#fecaca" font-size="10.5" font-family="Inter">Výfuk/EGR/DPF</text>
+            </g>
+
+            <g class="cursor-pointer" onclick="selectPart('brakes')">
+              <circle cx="451" cy="172" r="10" fill="#34d399" opacity="0.28" />
+              <circle cx="451" cy="172" r="5.5" fill="#34d399" />
+              <text x="451" y="218" text-anchor="middle" fill="#a7f3d0" font-size="10.5" font-family="Inter">Brzdy/Podvozok</text>
+            </g>
+
+            <g class="cursor-pointer" onclick="selectPart('electrics')">
+              <circle cx="290" cy="86" r="10" fill="#facc15" opacity="0.25" />
+              <circle cx="290" cy="86" r="5.5" fill="#facc15" />
+              <text x="290" y="54" text-anchor="middle" fill="#fef08a" font-size="10.5" font-family="Inter">Elektrika/Snímače</text>
             </g>
           </svg>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <button onclick="selectPart('battery')" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-left">🔋 Batéria & štart</button>
-          <button onclick="selectPart('engine')" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-left">⚙️ Motor & rozvody</button>
-          <button onclick="selectPart('brakes')" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-left">🛑 Brzdy & podvozok</button>
-          <button onclick="selectPart('exhaust')" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-left">💨 Emisie & výfuk</button>
-        </div>
+        <div id="partButtons" class="grid grid-cols-2 gap-2"></div>
       </div>
 
-      <div id="partDetailCard" class="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3"></div>
+      <div id="partDetailCard" class="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4"></div>
     </section>
+
+    <!-- Krok 4: Overenie podľa VIN a kľúčové zdroje pre presné diely a dielenské postupy -->
+    <section id="vinChecklistSection" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3"></section>
   </main>
 
   <script>
-    const CUSTOM_ENGINE_LABEL = "➕ Vlastná motorizácia (dopísať kód/kW)";
-
     const DB = {
       "Škoda": {
         code: "ŠK",
         models: [
-          { name: "105 / 120 / 130 / Favorit (1976–1994)", engines: ["1.0 (33 kW / 742.10)", "1.2 (37–38 kW / 742.12/781.135)", "1.3 BMM/Bazi (40/43/50 kW / 136B)", CUSTOM_ENGINE_LABEL] },
-          { name: "Felicia (1994–2001)", engines: ["1.3 MPI (40/50 kW / AMH/AMG)", "1.6 MPI (55 kW / AEE)", "1.9 D (47 kW / AEF)", CUSTOM_ENGINE_LABEL] },
-          { name: "Fabia I (1999–2008)", engines: ["1.2 HTP (40/47 kW / AWY/BMD/AZQ/BME)", "1.4 MPI / 16V (44/50/55/74 kW / AME/AQW/BKY/BBZ)", "1.9 SDI (47 kW / ASY)", "1.9 TDI (74/96 kW / ATD/AXR/ASZ)", "2.0 (85 kW / AZL)", CUSTOM_ENGINE_LABEL] },
-          { name: "Octavia I (1996–2010)", engines: ["1.4 16V (55 kW / AXP/BCA)", "1.6 (55/74/75 kW / AEE/AEH/AKL/BFQ)", "1.8 / 1.8T (92/110/132 kW / AGN/AGU/AUM/AUQ)", "1.9 SDI (50 kW / AGP/AQM)", "1.9 TDI (66/81/96 kW / ALH/AGR/ASV/ASZ)", "2.0 (85 kW / AQY/AZH/AZJ)", CUSTOM_ENGINE_LABEL] },
-          { name: "Fabia II / Roomster (2006–2015)", engines: ["1.2 HTP / TSI (44/51/63/77 kW / BBM/CHFA/BZG/CBZA/CBZB)", "1.4 / 1.6 16V (63/77 kW / BXW/CGGB/BTS/CFNA)", "1.4 / 1.6 / 1.9 TDI (51/59/66/77 kW / BNM/BNV/BMS/CAYA/CAYB/CAYC/AXR/BSW)", CUSTOM_ENGINE_LABEL] },
-          { name: "Octavia II (2004–2013)", engines: ["1.4 / 1.6 / 1.6 FSI (59/75/85 kW / BUD/CGGA/BGU/BSE/CCSA/BLF)", "1.2 / 1.4 / 1.8 / 2.0 TSI (77/90/118/147 kW / CBZB/CAXA/CDAA/BWA/CCZA)", "1.9 TDI (77 kW / BJB/BKC/BXE/BLS)", "2.0 TDI (100/103/125 kW / AZV/BKD/BMM/BMN/CEGA)", CUSTOM_ENGINE_LABEL] },
-          { name: "Superb I / II (2001–2015)", engines: ["1.9 TDI (77/96 kW / AVB/AWX/AVF/BLS)", "2.0 TDI (103/125 kW / BSS/BMP/CBBB/CFGB)", "2.5 TDI V6 (114/120 kW / AYM/BDG)", "1.8 TSI / 2.0 TSI (118/147 kW / CDAA/CCZA)", "3.6 FSI V6 (191 kW / CDVA)", CUSTOM_ENGINE_LABEL] },
-          { name: "Octavia III / IV (2013–2026)", engines: ["1.0 / 1.2 / 1.4 / 1.5 TSI (63/75/81/85/103/110 kW / CJZB/CYVB/CHPA/CZDA/DPCA/DXDB)", "2.0 TSI (132/140/169/180/195 kW)", "1.6 TDI (66/77/81/85 kW / CLHB/CLHA/CRKB/CXXB/DGTE)", "2.0 TDI (105/110/135/147 kW / CKFC/CRLB/CUPA/DTUA)", CUSTOM_ENGINE_LABEL] },
-          { name: "Kodiaq / Karoq / Superb III–IV (2016–2026)", engines: ["1.5 TSI / eTSI (110 kW)", "2.0 TSI (132/140/195/206 kW)", "2.0 TDI (110/140/147 kW)", "Plug-in Hybrid / iV", CUSTOM_ENGINE_LABEL] }
+          { name: "105 / 120 / 130 / Favorit (1976–1994)", engines: ["1.0 (33 kW / 742.10)", "1.2 (37 kW / 742.12)", "1.2 (38 kW / 742.12X)", "1.3 Karburátor (43 kW / 781.136)", "1.3 BMM (50 kW / 136B)", "1.3 Bazi (40 kW / 135B)"] },
+          { name: "Felicia (1994–2001)", engines: ["1.3 MPI (40 kW / AMH)", "1.3 MPI (50 kW / AMG)", "1.6 MPI (55 kW / AEE)", "1.9 D (47 kW / AEF)"] },
+          { name: "Fabia I (1999–2008)", engines: ["1.2 HTP (40 kW / AWY, BMD)", "1.2 HTP 12V (47 kW / AZQ, BME)", "1.4 MPI (44 kW / AME, AQW, ATZ)", "1.4 MPI (50 kW / AZE, AZF)", "1.4 16V (55 kW / AUA, BBY, BKY)", "1.4 16V (74 kW / AUB, BBZ)", "1.9 SDI (47 kW / ASY)", "1.9 TDI PD (74 kW / ATD, AXR)", "1.9 TDI PD RS (96 kW / ASZ)", "2.0 MPI (85 kW / AZL)"] },
+          { name: "Octavia I (1996–2010)", engines: ["1.4 16V (55 kW / AXP, BCA)", "1.6 (55 kW / AEE)", "1.6 (74 kW / AEH, AKL)", "1.6 (75 kW / AVU, BFQ)", "1.8 20V (92 kW / AGN)", "1.8T 20V (110 kW / AGU, ARX, AUM)", "1.8T 20V RS (132 kW / AUQ)", "1.9 SDI (50 kW / AGP, AQM)", "1.9 TDI (66 kW / AGR, ALH)", "1.9 TDI (81 kW / AHF, ASV)", "1.9 TDI PD (74 kW / ATD)", "1.9 TDI PD (96 kW / ASZ)", "2.0 MPI (85 kW / AQY, AZH, AZJ)"] },
+          { name: "Fabia II / Roomster (2006–2015)", engines: ["1.2 HTP (44 kW / BBM, CHFA)", "1.2 HTP 12V (51 kW / BZG, CEVA, CGPA)", "1.2 TSI (63 kW / CBZA)", "1.2 TSI (77 kW / CBZB)", "1.4 16V (63 kW / BXW, CGGB)", "1.6 16V (77 kW / BTS, CFNA)", "1.2 TDI CR (55 kW / CFWA)", "1.4 TDI PD (51 kW / BNM)", "1.4 TDI PD (59 kW / BNV, BMS)", "1.6 TDI CR (55 kW / CAYA)", "1.6 TDI CR (66 kW / CAYB)", "1.6 TDI CR (77 kW / CAYC)", "1.9 TDI PD (77 kW / BSW)"] },
+          { name: "Octavia II (2004–2013)", engines: ["1.4 16V (59 kW / BUD, CGGA)", "1.6 MPI (75 kW / BGU, BSE, CCSA)", "1.6 FSI (85 kW / BLF)", "1.2 TSI (77 kW / CBZB)", "1.4 TSI (90 kW / CAXA)", "1.8 TSI (118 kW / BZB, CDAA)", "2.0 FSI (110 kW / BLY, BVX)", "2.0 TSI RS (147 kW / BWA, CCZA)", "1.9 TDI PD (77 kW / BJB, BKC, BXE, BLS)", "2.0 TDI PD (100 kW / AZV)", "2.0 TDI PD (103 kW / BKD, BMM)", "2.0 TDI PD RS (125 kW / BMN, CEGA)", "2.0 TDI CR (103 kW / CFHC, CLCB)", "2.0 TDI CR RS (125 kW / CFGB)"] },
+          { name: "Superb I / II (2001–2015)", engines: ["1.9 TDI PD (77 kW / BLS)", "1.9 TDI PD (96 kW / AVB, AWX, AVF)", "2.0 TDI PD (103 kW / BSS, BMP)", "2.0 TDI CR (125 kW / CBBB, CFGB)", "2.5 TDI V6 (114 kW / AYM)", "2.5 TDI V6 (120 kW / BDG)", "1.4 TSI (92 kW / CAXC)", "1.8 TSI (112 kW / CDAB)", "1.8 TSI (118 kW / BZB, CDAA)", "2.0 TSI (147 kW / CCZA)", "3.6 FSI V6 4x4 (191 kW / CDVA)"] },
+          { name: "Octavia III / IV (2013–2026)", engines: ["1.0 TSI (81 kW / CHZD, DKRF)", "1.0 TSI / eTSI (85 kW / DLAA, DXDB)", "1.2 TSI (63 kW / CJZB)", "1.2 TSI (81 kW / CYVB)", "1.4 TSI (103 kW / CHPA)", "1.4 TSI (110 kW / CZDA)", "1.5 TSI / eTSI (110 kW / DADA, DPCA, DXDB)", "2.0 TSI (132 kW / CHHB)", "2.0 TSI (140 kW / DKZA, DNPA)", "2.0 TSI RS (169 kW / CHHA)", "2.0 TSI RS (180 kW / DLBA)", "2.0 TSI RS (195 kW / DNFF)", "1.4 TSI iV Plug-in Hybrid (150 kW)", "1.6 TDI (66 kW / CLHB, CXXA)", "1.6 TDI (77 kW / CLHA)", "1.6 TDI (81 kW / CRKB, CXXB)", "1.6 TDI (85 kW / DGTE)", "2.0 TDI (105 kW / CKFC)", "2.0 TDI (110 kW / CRLB, DCYA, DTTC, DSRB)", "2.0 TDI RS (135 kW / CUNA, CUPA)", "2.0 TDI RS (147 kW / DTUA)"] },
+          { name: "Kodiaq / Karoq / Superb III–IV (2016–2026)", engines: ["1.0 TSI (85 kW / CHZJ)", "1.5 TSI / eTSI (110 kW / DADA, DPCA, DXDB)", "2.0 TSI (132 kW / CZPB)", "2.0 TSI (140 kW / DKZA, DNPA)", "2.0 TSI (195 kW / DNFF)", "2.0 TSI (206 kW / CJXA, DNFE)", "1.6 TDI (85 kW / DGTE)", "2.0 TDI (110 kW / DFFA, DSRB, DTTC)", "2.0 TDI (140 kW / DFHA)", "2.0 TDI (147 kW / DTUA)", "1.4 / 1.5 TSI iV Plug-in Hybrid (150 kW)"] }
         ]
       },
       "Volkswagen": {
         code: "VW",
         models: [
-          { name: "Golf I / II (1974–1992)", engines: ["1.3 / 1.6 / 1.8 (40–82 kW / HK/PN/GU/PB)", "1.6 D / TD (40/51/59 kW / JP/JR/MF/SB)", "1.8 GTI 16V (95/102 kW / KR/PL)", CUSTOM_ENGINE_LABEL] },
-          { name: "Golf III / Vento (1991–1998)", engines: ["1.4 / 1.6 / 1.8 (44/55/66/74 kW / ABD/AEX/ABU/ABS/AFT)", "2.0 GTI (85 kW / 2E/AGG/AKR)", "1.9 D / TD (47/55 kW / 1Y/AAZ)", "1.9 TDI (66/81 kW / 1Z/AHU/AFN)", CUSTOM_ENGINE_LABEL] },
-          { name: "Golf IV / Bora (1997–2005)", engines: ["1.4 / 1.6 / 1.6 FSI (55/74/75/77/81 kW / AXP/BCA/AKL/AVU/BFQ/AZD/BAD)", "1.8 / 1.8T / 2.3 V5 (92/110/132/110/125 kW / AGN/AGU/ARZ/AUM/AUQ/AGZ/AQN)", "1.9 SDI (50 kW / AGP/AQM)", "1.9 TDI (66/74/81/96/110 kW / AGR/ALH/ATD/AXR/AHF/ASV/ASZ/ARL)", CUSTOM_ENGINE_LABEL] },
-          { name: "Passat B5 / B5.5 (1996–2005)", engines: ["1.6 / 1.8 / 1.8T (74/75/92/110/125 kW / ADP/AHL/ADR/AEB/APU/AWT)", "2.0 / 2.3 V5 / 2.8 V6 (85/96/110/125/142 kW)", "1.9 TDI (66/74/81/96 kW / AHU/AFN/AVB/AVF/AWX)", "2.0 TDI (100 kW / BGW/BHW)", "2.5 TDI V6 (110/120/132 kW / AFB/AKN/AYM/BDG/BAU)", CUSTOM_ENGINE_LABEL] },
-          { name: "Golf V / VI (2003–2012)", engines: ["1.4 / 1.6 / 1.6 FSI (55/59/75/85 kW / BUD/CGGA/BGU/BSE/BLF)", "1.2 / 1.4 / 1.8 / 2.0 TSI & GTI (63/77/90/103/118/147/155/173 kW)", "1.9 TDI (66/77 kW / BRU/BXF/BXJ/BKC/BLS/BXE)", "2.0 TDI (100/103/125 kW / AZV/BKD/BMM/CBAB/CBBB)", CUSTOM_ENGINE_LABEL] },
-          { name: "Passat B6 / B7 / CC (2005–2015)", engines: ["1.4 / 1.8 / 2.0 TSI (90/112/118/147/155 kW)", "1.6 TDI / 1.9 TDI (77 kW / CAYC/BKC/BXE)", "2.0 TDI (81/100/103/125/130 kW / CBDC/BKP/BMR/CBAB/CBBB/CFGB/CLLA)", CUSTOM_ENGINE_LABEL] },
-          { name: "Golf VII / VIII (2013–2026)", engines: ["1.0 / 1.2 / 1.4 / 1.5 TSI & eTSI (63–110 kW)", "2.0 TSI GTI / R (169–245 kW)", "1.6 TDI (66/81/85 kW / CLHA/CRKB/CXXB/DGTE)", "2.0 TDI (85/110/135/147 kW / CRLB/DFGA/DTUA)", CUSTOM_ENGINE_LABEL] },
-          { name: "Passat B8 / B9 (2015–2026)", engines: ["1.4 / 1.5 / 2.0 TSI & eHybrid", "1.6 TDI (88 kW / DCXA)", "2.0 TDI (88/110/140/176 kW / CRLB/DFGA/DDAA/CUAA/DTUA)", CUSTOM_ENGINE_LABEL] },
-          { name: "Tiguan / Touran / Caddy (2003–2026)", engines: ["1.6 / 1.9 / 2.0 TDI (75–176 kW)", "1.4 / 1.5 / 2.0 TSI", CUSTOM_ENGINE_LABEL] }
+          { name: "Golf I / II (1974–1992)", engines: ["1.3 (40 kW / HK, MH, 2G)", "1.6 (55 kW / PN, RF)", "1.8 (66 kW / GU, RP)", "1.8 GTI (82 kW / PB, PF)", "1.8 GTI 16V (95 kW / KR)", "1.8 GTI 16V (102 kW / PL)", "1.6 D (40 kW / JP)", "1.6 TD (51 kW / JR)", "1.6 TD Intercooler (59 kW / RA, SB)"] },
+          { name: "Golf III / Vento (1991–1998)", engines: ["1.4 (44 kW / ABD, AEX)", "1.6 (55 kW / ABU, AEA, AEE)", "1.6 (74 kW / AEK, AFT)", "1.8 (55 kW / AAM)", "1.8 (66 kW / ABS, ADZ)", "2.0 GTI (85 kW / 2E, AGG, AKR)", "2.8 VR6 (128 kW / AAA)", "1.9 D (47 kW / 1Y)", "1.9 TD (55 kW / AAZ)", "1.9 TDI (66 kW / 1Z, AHU, ALE)", "1.9 TDI (81 kW / AFN)"] },
+          { name: "Golf IV / Bora (1997–2005)", engines: ["1.4 16V (55 kW / AXP, BCA)", "1.6 (74 kW / AEH, AKL)", "1.6 (75 kW / AVU, BFQ)", "1.6 16V (77 kW / AUS, AZD, BCB)", "1.6 FSI (81 kW / BAD)", "1.8 20V (92 kW / AGN)", "1.8T 20V (110 kW / AGU, ARZ, AUM)", "1.8T 20V GTI (132 kW / AUQ)", "2.0 (85 kW / AQY, AZH, AZJ)", "2.3 V5 (110 kW / AGZ)", "2.3 V5 (125 kW / AQN)", "2.8 V6 (150 kW / AUE, BDE)", "1.9 SDI (50 kW / AGP, AQM)", "1.9 TDI (66 kW / AGR, ALH)", "1.9 TDI (81 kW / AHF, ASV)", "1.9 TDI PD (74 kW / ATD, AXR)", "1.9 TDI PD (85 kW / AJM, AUY)", "1.9 TDI PD (96 kW / ASZ)", "1.9 TDI PD (110 kW / ARL)"] },
+          { name: "Passat B5 / B5.5 (1996–2005)", engines: ["1.6 (74 kW / ADP, AHL, ANA, ARM)", "1.6 (75 kW / ALZ)", "1.8 20V (92 kW / ADR, APT, ARG)", "1.8T 20V (110 kW / AEB, APU, ANB, AWT)", "2.0 (85 kW / AZM, ALT)", "2.3 V5 (110 kW / AGZ)", "2.3 V5 (125 kW / AZX)", "2.8 V6 (142 kW / ACK, APR, ATQ)", "1.9 TDI (66 kW / AHU, AHH)", "1.9 TDI (81 kW / AFN, AVG)", "1.9 TDI PD (74 kW / AVB)", "1.9 TDI PD (96 kW / AVF, AWX)", "2.0 TDI PD (100 kW / BGW, BHW)", "2.5 TDI V6 (110 kW / AFB, AKN)", "2.5 TDI V6 (120 kW / AYM)", "2.5 TDI V6 (132 kW / BDH, BAU)"] },
+          { name: "Golf V / VI (2003–2012)", engines: ["1.4 16V (55 kW / BCA)", "1.4 16V (59 kW / BUD, CGGA)", "1.6 (75 kW / BGU, BSE, CCSA)", "1.6 FSI (85 kW / BLF, BLP)", "1.2 TSI (63 kW / CBZA)", "1.2 TSI (77 kW / CBZB)", "1.4 TSI (90 kW / CAXA)", "1.4 TSI (103 kW / BMY, CNVA)", "1.4 TSI (118 kW / CAVD, CTHD)", "1.8 TSI (118 kW / BZB, CDAA)", "2.0 GTI TFSI / TSI (147 kW / AXX, BWA, CCZA)", "2.0 GTI Edition 35 / R (173–199 kW)", "1.9 TDI PD (66 kW / BRU, BXF, BXJ)", "1.9 TDI PD (77 kW / BKC, BLS, BXE)", "2.0 TDI PD (100 kW / AZV)", "2.0 TDI PD (103 kW / BKD, BMM)", "2.0 TDI PD (125 kW / BMN)", "2.0 TDI CR (81 kW / CBDC, CLCA)", "2.0 TDI CR (103 kW / CBAB, CFFB, CJAA)", "2.0 TDI CR GTD (125 kW / CBBB, CFGB)"] },
+          { name: "Passat B6 / B7 / CC (2005–2015)", engines: ["1.4 TSI (90 kW / CAXA)", "1.6 (75 kW / BSE, BSF, CCSA)", "1.8 TSI (112 kW / CDAB)", "1.8 TSI (118 kW / BZB, CDAA)", "2.0 FSI (110 kW / BLY, BVY, BVZ)", "2.0 TSI (147 kW / BWA, CAWB, CCZA)", "2.0 TSI (155 kW / CCZB)", "3.6 FSI V6 (220 kW / BWS)", "1.6 TDI CR (77 kW / CAYC)", "1.9 TDI PD (77 kW / BKC, BLS, BXE)", "2.0 TDI PD (103 kW / BMP)", "2.0 TDI PD (125 kW / BMR)", "2.0 TDI CR (81 kW / CBDC, CLLA)", "2.0 TDI CR (103 kW / CBAB, CFFB)", "2.0 TDI CR (125 kW / CBBB, CFGB)", "2.0 TDI CR BiTurbo (130 kW / CFCA)"] },
+          { name: "Golf VII / VIII (2013–2026)", engines: ["1.0 TSI (63 kW / CHZB)", "1.0 TSI (81 kW / CHZD)", "1.0 TSI / eTSI (85 kW / DAFA, DLAA, DXDB)", "1.2 TSI (63 kW / CJZB)", "1.2 TSI (81 kW / CYVB)", "1.4 TSI (92 kW / CZCA)", "1.4 TSI (110 kW / CZDA)", "1.5 TSI / eTSI (96 kW / DACA)", "1.5 TSI / eTSI (110 kW / DADA, DPCA, DXDB)", "2.0 GTI (162 / 169 / 180 / 195 kW)", "2.0 R (221 / 228 / 235 / 245 kW)", "1.4 GTE Plug-in Hybrid (150 / 180 kW)", "1.6 TDI (66 kW / CLHB, CXXA)", "1.6 TDI (81 kW / CRKB, CXXB)", "1.6 TDI (85 kW / DGTE)", "2.0 TDI (85 kW / CRLD, DFFA)", "2.0 TDI (110 kW / CRLB, DFGA, DSRB, DTTC)", "2.0 TDI GTD (135 kW / CUNA, DGCA)", "2.0 TDI GTD (147 kW / DTUA)"] },
+          { name: "Passat B8 / B9 (2015–2026)", engines: ["1.4 TSI (92 kW / CZCA)", "1.4 TSI (110 kW / CZDA)", "1.5 TSI / eTSI (110 kW / DADA, DPCA, DXDB)", "2.0 TSI (140 kW / CZPB, DNNA)", "2.0 TSI (195 / 200 / 206 kW)", "1.4 TSI GTE / eHybrid (150 / 160 kW)", "1.6 TDI (88 kW / DCXA)", "2.0 TDI (88 kW / CRLD, DEZB)", "2.0 TDI (110 kW / CRLB, DFGA, DSRB, DTTC)", "2.0 TDI (140 kW / DDAA, DFHA)", "2.0 TDI BiTurbo (176 kW / CUAA)"] },
+          { name: "Tiguan / Touran / Caddy (2003–2026)", engines: ["1.4 TSI (92 / 110 kW)", "1.5 TSI (110 kW)", "2.0 TSI (110 / 132 / 140 / 162 / 169 kW)", "1.6 TDI (75 / 77 / 81 / 85 / 88 kW)", "1.9 TDI (66 / 74 / 77 kW)", "2.0 TDI (81 / 100 / 103 / 110 / 125 / 130 / 140 / 176 kW)"] }
         ]
       },
       "Audi": {
         code: "AU",
         models: [
-          { name: "80 / 90 / 100 (1978–1994)", engines: ["1.6 / 1.8 / 2.0 / 2.3 (51–100 kW / PM/ABK/AAR)", "1.6 TD / 1.9 TDI (51/59/66 kW / RA/SB/1Z)", CUSTOM_ENGINE_LABEL] },
-          { name: "A4 B5 (1994–2001)", engines: ["1.6 / 1.8 / 1.8T / 2.4 / 2.8 (74–142 kW / ADP/AEB/APU/AJL/AGA/ACK)", "1.9 TDI (55/66/81/85 kW / AFF/1Z/AHU/AFN/AVG/AJM)", "2.5 TDI V6 (110 kW / AFB/AKN)", CUSTOM_ENGINE_LABEL] },
-          { name: "A6 C5 (1997–2004)", engines: ["1.8T / 2.4 / 2.8 / 3.0 / 4.2 (110–220 kW)", "1.9 TDI (81/96 kW / AFN/AVG/AJM/AVF/AWX)", "2.5 TDI V6 (110/114/120/132 kW / AFB/AKE/AYM/BCZ/BDH)", CUSTOM_ENGINE_LABEL] },
-          { name: "A3 8L / 8P / 8V / 8Y (1996–2026)", engines: ["1.6 / 1.8 / 1.8T / 2.0 TFSI / 1.5 TFSI", "1.9 TDI (66/74/77/96 kW)", "2.0 TDI (100/103/110/125/135 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "A4 B6 / B7 (2000–2008)", engines: ["1.6 / 1.8T / 2.0 / 2.0 TFSI / 3.0 / 3.2 FSI", "1.9 TDI (74/85/96 kW / AVB/BKE/BRB/AWX/AVF)", "2.0 TDI (100/103/125 kW / BPW/BLB/BRE/BRD/BVF)", "2.5 / 3.0 TDI V6 (120/150/171 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "A6 C6 / C7 / C8 (2004–2026)", engines: ["2.0 TDI / 2.0 TFSI / 3.0 TFSI", "2.7 / 3.0 TDI V6 (132–240 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "A4 B8 / B9 (2007–2025)", engines: ["1.8 / 2.0 TFSI (88–185 kW)", "2.0 TDI (88/100/105/110/120/130/140 kW / CAGA/CAGB/CGLC/DETA/DEUA)", "3.0 TDI V6 (150/160/176/180/200 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "Q3 / Q5 / Q7 (2005–2026)", engines: ["2.0 TDI (100–150 kW)", "3.0 TDI V6 (155–210 kW)", "TFSI / TFSI e Hybrid", CUSTOM_ENGINE_LABEL] }
+          { name: "80 / 90 / 100 (1978–1994)", engines: ["1.6 (51 / 55 / 75 kW)", "1.8 (66 / 82 kW)", "2.0 (66 / 85 kW / ABK)", "2.3 5-valec (98 / 100 kW / AAR)", "1.6 TD (51 / 59 kW / RA, SB)", "1.9 TDI (66 kW / 1Z)"] },
+          { name: "A4 B5 (1994–2001)", engines: ["1.6 (74 / 75 kW / ADP, AHL, ALZ)", "1.8 20V (92 kW / ADR, APT, ARG)", "1.8T 20V (110 kW / AEB, APU, ANB, AWT)", "1.8T 20V (132 kW / AJL)", "2.4 V6 (121 kW / AGA, ALF, APS, ARJ)", "2.8 V6 (142 kW / ACK, ALG, APR, ATQ)", "1.9 TDI (55 kW / AFF)", "1.9 TDI (66 kW / 1Z, AHU, AHH)", "1.9 TDI (81 kW / AFN, AVG)", "1.9 TDI PD (85 kW / AJM, ATJ)", "2.5 TDI V6 (110 kW / AFB, AKN)"] },
+          { name: "A6 C5 (1997–2004)", engines: ["1.8T (110 / 132 kW)", "2.4 V6 (121 / 125 kW)", "2.8 V6 (142 kW)", "3.0 V6 (162 kW / ASN)", "4.2 V8 (220 kW)", "1.9 TDI (81 kW / AFN, AVG)", "1.9 TDI PD (96 kW / AJM, AVF, AWX)", "2.5 TDI V6 (110 / 114 / 120 / 132 kW)"] },
+          { name: "A3 8L / 8P / 8V / 8Y (1996–2026)", engines: ["1.6 (74 / 75 / 85 kW)", "1.8 / 1.8T (92 / 110 / 118 / 132 kW)", "1.2 / 1.4 / 1.5 / 2.0 TFSI", "1.9 TDI (66 / 74 / 77 / 81 / 96 kW)", "2.0 TDI (100 / 103 / 110 / 125 / 135 kW)"] },
+          { name: "A4 B6 / B7 (2000–2008)", engines: ["1.6 (75 kW / ALZ)", "1.8T (110 / 120 kW / BFB)", "2.0 (96 kW / ALT)", "2.0 TFSI (147 / 162 kW)", "3.0 V6 (160 / 162 kW)", "3.2 FSI V6 (188 kW)", "1.9 TDI PD (74 kW / AVB)", "1.9 TDI PD (85 kW / BKE, BRB)", "1.9 TDI PD (96 kW / AVF, AWX)", "2.0 TDI PD (100 / 103 / 125 kW / BPW, BLB, BRE, BRD, BVF)", "2.5 TDI V6 (120 kW / BDG)", "3.0 TDI V6 (150 / 171 kW / BKN, ASB)"] },
+          { name: "A6 C6 / C7 / C8 (2004–2026)", engines: ["2.0 TFSI (125 / 132 / 140 / 180 / 185 kW)", "2.8 / 3.0 TFSI V6 (140–250 kW)", "2.0 TDI (100 / 103 / 110 / 120 / 125 / 130 / 140 / 150 kW)", "2.7 TDI V6 (132 / 140 kW)", "3.0 TDI V6 (150 / 160 / 165 / 171 / 176 / 180 / 200 / 210 / 230 / 240 kW)"] },
+          { name: "A4 B8 / B9 (2007–2025)", engines: ["1.8 TFSI (88 / 118 / 125 kW)", "2.0 TFSI (132 / 140 / 155 / 165 / 183 / 185 kW)", "2.0 TDI (88 kW / CAGC)", "2.0 TDI (100 / 105 kW / CAGB, CJCB)", "2.0 TDI (110 kW / CJCD, DETA, DEUA)", "2.0 TDI (120 / 125 / 130 kW / CAHA, CGLC)", "2.0 TDI (140 kW / CNHA, DESA)", "3.0 TDI V6 (150 / 160 / 176 / 180 / 200 kW)"] },
+          { name: "Q3 / Q5 / Q7 (2005–2026)", engines: ["2.0 TDI (100 / 103 / 110 / 120 / 125 / 130 / 140 / 150 kW)", "3.0 TDI V6 (155 / 171 / 176 / 180 / 190 / 200 / 210 kW)", "2.0 TFSI / TFSI e Hybrid", "3.0 TFSI V6"] }
         ]
       },
       "BMW": {
         code: "BMW",
         models: [
-          { name: "Rad 3 E30 (1982–1994)", engines: ["316 / 316i / 318i / 318is (66/75/83/100 kW / M10/M40/M42)", "320i / 325i / 325ix (95/125/126 kW / M20)", "324d / 324td (63/85 kW / M21)", CUSTOM_ENGINE_LABEL] },
-          { name: "Rad 3 E36 (1990–2000)", engines: ["316i / 318i / 318is (73/75/85/103 kW / M40/M43/M42/M44)", "320i / 323i / 325i / 328i (110/125/141/142 kW / M50/M52)", "318tds / 325tds (66/105 kW / M41/M51)", CUSTOM_ENGINE_LABEL] },
-          { name: "Rad 5 E34 / E39 (1988–2004)", engines: ["520i / 523i / 525i / 528i / 530i / 540i", "524td / 525tds (85/105 kW / M21/M51)", "520d / 525d / 530d (100/120/135/142 kW / M47/M57)", CUSTOM_ENGINE_LABEL] },
-          { name: "Rad 3 E46 (1998–2006)", engines: ["316i / 318i / 320i / 323i / 325i / 328i / 330i", "318d / 320d / 330d (85/100/110/135/150 kW / M47/M47N/M57/M57N)", CUSTOM_ENGINE_LABEL] },
-          { name: "Rad 3 E90 / E91 / E92 / E93 (2005–2013)", engines: ["316i / 318i / 320i / 325i / 330i / 335i", "316d / 318d / 320d / 325d / 330d / 335d (85–210 kW / M47/N47/M57/N57)", CUSTOM_ENGINE_LABEL] },
-          { name: "Rad 5 E60 / E61 / F10 / F11 / G30 (2003–2023)", engines: ["520d / 525d / 530d / 535d / 540d (120–235 kW)", "520i / 523i / 525i / 528i / 530i / 540i", CUSTOM_ENGINE_LABEL] },
-          { name: "Rad 3 F30 / F31 / G20 / G21 (2012–2026)", engines: ["316d / 318d / 320d / 330d (85–210 kW / N47/B47)", "318i / 320i / 330i / 340i (B38/B48/B58)", CUSTOM_ENGINE_LABEL] },
-          { name: "X1 / X3 / X5 / X6 (1999–2026)", engines: ["18d / 20d / 25d / 30d / 35d / 40d", "20i / 28i / 30i / 35i / 40i / xDrive Hybrid", CUSTOM_ENGINE_LABEL] }
+          { name: "Rad 3 E30 (1982–1994)", engines: ["316 (66 kW / M10)", "316i (73 / 75 kW / M40)", "318i (77 / 83 / 85 kW / M10, M40)", "318is (100 kW / M42)", "320i (95 kW / M20)", "325i (125 / 126 kW / M20)", "324d (63 kW / M21)", "324td (85 kW / M21)"] },
+          { name: "Rad 3 E36 (1990–2000)", engines: ["316i (73 / 75 / 77 kW / M40, M43)", "318i (83 / 85 kW / M40, M43)", "318is / 318ti (103 kW / M42, M44)", "320i (110 kW / M50, M52)", "323i (125 kW / M52)", "325i (141 kW / M50)", "328i (142 kW / M52)", "318tds (66 kW / M41)", "325tds (105 kW / M51)"] },
+          { name: "Rad 5 E34 / E39 (1988–2004)", engines: ["520i (95 / 110 / 125 kW)", "523i (125 kW / M52)", "525i (125 / 141 / 142 kW)", "528i (142 kW / M52)", "530i (138 / 160 / 170 kW)", "540i V8 (210 kW / M60, M62)", "524td (85 kW / M21)", "525tds (105 kW / M51)", "520d (100 kW / M47)", "525d (120 kW / M57)", "530d (135 / 142 kW / M57)"] },
+          { name: "Rad 3 E46 (1998–2006)", engines: ["316i (77 / 85 kW / M43, N42, N46)", "318i (87 / 105 kW / M43, N42, N46)", "320i (110 / 125 kW / M52, M54)", "323i (125 kW / M52)", "325i (141 kW / M54)", "328i (142 kW / M52)", "330i (170 kW / M54)", "318d (85 kW / M47)", "320d (100 kW / M47)", "320d (110 kW / M47N)", "330d (135 kW / M57)", "330d (150 kW / M57N)"] },
+          { name: "Rad 3 E90 / E91 / E92 / E93 (2005–2013)", engines: ["316i (90 kW / N43)", "318i (95 / 105 kW / N46, N43)", "320i (110 / 125 kW / N46, N43)", "325i (160 kW / N52, N53)", "330i (190 / 200 kW / N52, N53)", "335i (225 kW / N54, N55)", "316d (85 kW / N47)", "318d (105 kW / M47N2, N47)", "320d (120 / 130 / 135 kW / M47N2, N47)", "325d (145 / 150 kW / M57N2, N57)", "330d (170 / 180 kW / M57N2, N57)", "335d (210 kW / M57N2)"] },
+          { name: "Rad 5 E60 / E61 / F10 / F11 / G30 (2003–2023)", engines: ["520i (125 / 135 kW)", "523i (130 / 140 / 150 kW)", "525i (141 / 160 kW)", "528i (180 / 190 / 200 kW)", "530i (170 / 185 / 190 / 200 kW)", "540i (225 / 250 kW)", "520d (120 / 130 / 135 / 140 kW / M47N2, N47, B47)", "525d (130 / 145 / 150 / 160 kW)", "530d (160 / 173 / 180 / 190 / 195 / 210 kW)", "535d (200 / 210 / 220 / 230 kW)"] },
+          { name: "Rad 3 F30 / F31 / G20 / G21 (2012–2026)", engines: ["318i (100 / 115 kW / B38)", "320i (135 kW / N20, B48)", "330i (185 / 190 kW / N20, B48)", "340i / M340i (240 / 275 / 285 kW / B58)", "316d (85 kW / N47, B47)", "318d (105 / 110 kW / N47, B47)", "320d (120 / 135 / 140 kW / N47, B47)", "330d (190 / 210 kW / N57, B57)", "330e Plug-in Hybrid (185 / 215 kW)"] },
+          { name: "X1 / X3 / X5 / X6 (1999–2026)", engines: ["18d / 20d (105 / 110 / 120 / 130 / 135 / 140 kW)", "25d / 30d / 35d / 40d (150 / 160 / 173 / 180 / 190 / 195 / 210 / 225 / 230 / 250 kW)", "20i / 28i / 30i / 35i / 40i / xDrive Hybrid"] }
         ]
       },
       "Mercedes-Benz": {
         code: "MB",
         models: [
-          { name: "190 W201 / Trieda E W124 (1982–1996)", engines: ["200 D / 250 D / 250 TD / 300 D / 300 TD (OM601/OM602/OM603)", "190 E / 200 E / 230 E / 260 E / 300 E (M102/M103)", CUSTOM_ENGINE_LABEL] },
-          { name: "Trieda C W202 (1993–2000)", engines: ["C 180 / C 200 / C 220 / C 230 / C 240 / C 280 (M111/M112)", "C 200 D / C 220 D / C 250 TD / C 200 CDI / C 220 CDI (OM601/OM604/OM605/OM611)", CUSTOM_ENGINE_LABEL] },
-          { name: "Trieda E W210 (1995–2003)", engines: ["E 200 / E 230 / E 240 / E 280 / E 320 / E 430", "E 200 CDI / E 220 CDI / E 270 CDI / E 320 CDI (OM611/OM612/OM613)", CUSTOM_ENGINE_LABEL] },
-          { name: "Trieda C W203 / W204 (2000–2014)", engines: ["C 180 / C 200 / C 230 / C 250 / C 280 / C 300 / C 350", "C 200 CDI / C 220 CDI / C 250 CDI / C 320 CDI / C 350 CDI (OM646/OM651/OM642)", CUSTOM_ENGINE_LABEL] },
-          { name: "Trieda E W211 / W212 (2002–2016)", engines: ["E 200 CDI / E 220 CDI / E 250 CDI / E 280 CDI / E 300 CDI / E 350 CDI", "E 200 / E 250 / E 350 / E 500", CUSTOM_ENGINE_LABEL] },
-          { name: "Trieda C W205 / W206 & E W213 / W214 (2014–2026)", engines: ["180d / 200d / 220d / 300d / 350d / 400d (OM651/OM654/OM656)", "180 / 200 / 300 / Plug-in Hybrid", CUSTOM_ENGINE_LABEL] }
+          { name: "190 W201 / Trieda E W124 (1982–1996)", engines: ["190 E / 200 E (75 / 87 / 90 kW / M102)", "230 E (97 / 100 kW / M102)", "260 E / 300 E (118 / 122 / 132 kW / M103)", "200 D (53 / 55 kW / OM601)", "250 D / 250 TD (66 / 69 / 93 kW / OM602)", "300 D / 300 TD (80 / 81 / 83 / 108 kW / OM603)"] },
+          { name: "Trieda C W202 (1993–2000)", engines: ["C 180 (90 kW / M111)", "C 200 (100 kW / M111)", "C 220 (110 kW / M111)", "C 230 Kompressor (142 kW / M111)", "C 240 V6 (125 kW / M112)", "C 280 V6 (145 kW / M112)", "C 200 D (55 / 65 kW / OM601, OM604)", "C 220 D (70 kW / OM604)", "C 250 TD (110 kW / OM605)", "C 200 CDI (75 kW / OM611)", "C 220 CDI (92 kW / OM611)"] },
+          { name: "Trieda E W210 (1995–2003)", engines: ["E 200 (100 / 120 kW / M111)", "E 230 (110 kW / M111)", "E 240 V6 (125 kW / M112)", "E 280 V6 (150 kW / M112)", "E 320 V6 (165 kW / M112)", "E 430 V8 (205 kW / M113)", "E 200 CDI (85 kW / OM611)", "E 220 CDI (92 / 105 kW / OM611)", "E 270 CDI (125 kW / OM612)", "E 320 CDI (145 kW / OM613)"] },
+          { name: "Trieda C W203 / W204 (2000–2014)", engines: ["C 180 / C 180 Kompressor (95 / 105 / 115 kW)", "C 200 / C 200 Kompressor (105 / 120 / 135 kW)", "C 230 / C 250 / C 280 / C 300 / C 350", "C 200 CDI (90 / 100 kW / OM646, OM651)", "C 220 CDI (105 / 110 / 125 kW / OM646, OM651)", "C 250 CDI (150 kW / OM651)", "C 320 CDI / C 350 CDI V6 (165 / 170 / 195 kW / OM642)"] },
+          { name: "Trieda E W211 / W212 (2002–2016)", engines: ["E 200 / E 250 / E 350 / E 500", "E 200 CDI (90 / 100 kW / OM646, OM651)", "E 220 CDI (100 / 110 / 125 kW / OM646, OM651)", "E 250 CDI (150 kW / OM651)", "E 280 CDI / E 300 CDI / E 350 CDI V6 (140–195 kW / OM642)"] },
+          { name: "Trieda C W205 / W206 & E W213 / W214 (2014–2026)", engines: ["180 / 200 / 300 Benzín & Plug-in Hybrid", "180d / 200d (90 / 110 / 120 kW)", "220d (125 / 143 / 145 kW / OM651, OM654)", "300d (180 / 195 / 220 kW / OM654)", "350d / 400d (190 / 210 / 243 / 250 kW / OM642, OM656)"] }
         ]
       },
       "Toyota": {
         code: "TOY",
         models: [
-          { name: "Corolla E80 / E90 / E100 / E110 (1983–2002)", engines: ["1.3 / 1.4 / 1.6 / 1.8 (2E/4E-FE/4A-FE/7A-FE)", "1.8 D / 2.0 D (1C/2C)", CUSTOM_ENGINE_LABEL] },
-          { name: "Corolla E120 / Auris (2000–2018)", engines: ["1.4 / 1.6 VVT-i / Valvematic (4ZZ-FE/3ZZ-FE/1ZR-FAE)", "1.4 D-4D / 2.0 D-4D / 2.2 D-4D (1ND/1CD/2AD)", "1.8 Hybrid (2ZR-FXE)", CUSTOM_ENGINE_LABEL] },
-          { name: "Avensis T22 / T25 / T27 (1997–2018)", engines: ["1.6 / 1.8 / 2.0 / 2.4 VVT-i / Valvematic", "2.0 D-4D (66/81/85/91/93/105 kW)", "2.2 D-4D / D-CAT (110/130 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "RAV4 XA10 / XA20 / XA30 / XA40 / XA50 (1994–2026)", engines: ["2.0 / 2.4 VVT-i", "2.0 D-4D / 2.2 D-4D (85/100/110/130 kW)", "2.5 Hybrid / Plug-in Hybrid", CUSTOM_ENGINE_LABEL] },
-          { name: "Yaris / C-HR / Corolla Cross (1999–2026)", engines: ["1.0 / 1.33 / 1.5 VVT-i", "1.4 D-4D (66 kW)", "1.5 / 1.8 / 2.0 Hybrid", CUSTOM_ENGINE_LABEL] }
+          { name: "Corolla E80 / E90 / E100 / E110 (1983–2002)", engines: ["1.3 12V / 16V (55 / 63 kW / 2E, 4E-FE)", "1.4 16V (63 / 71 kW / 4ZZ-FE)", "1.6 16V (77 / 81 / 84 kW / 4A-FE, 3ZZ-FE)", "1.8 D / 2.0 D (47 / 51 / 53 / 66 kW / 1C, 2C)"] },
+          { name: "Corolla E120 / Auris (2000–2018)", engines: ["1.4 VVT-i (71 kW / 4ZZ-FE)", "1.6 VVT-i (81 kW / 3ZZ-FE)", "1.6 Valvematic (91 / 97 kW / 1ZR-FAE)", "1.4 D-4D (66 kW / 1ND-TV)", "2.0 D-4D (66 / 81 / 85 / 91 / 93 kW / 1CD-FTV, 1AD-FTV)", "2.2 D-4D (130 kW / 2AD-FHV)", "1.8 Hybrid (73 + 60 kW / 2ZR-FXE)"] },
+          { name: "Avensis T22 / T25 / T27 (1997–2018)", engines: ["1.6 VVT-i / Valvematic (74 / 81 / 97 kW)", "1.8 VVT-i / Valvematic (81 / 95 / 108 kW)", "2.0 VVT-i / Valvematic (94 / 108 / 112 kW)", "2.4 VVT-i (120 kW / 2AZ-FSE)", "2.0 D-4D (66 / 81 / 85 / 91 / 93 / 105 kW)", "2.2 D-4D / D-CAT (110 / 130 kW)"] },
+          { name: "RAV4 XA10 / XA20 / XA30 / XA40 / XA50 (1994–2026)", engines: ["2.0 VVT-i / Valvematic (94 / 110 / 112 / 129 kW)", "2.4 VVT-i (118 / 125 kW)", "2.0 D-4D (85 / 91 / 100 / 105 kW)", "2.2 D-4D (100 / 110 / 130 kW)", "2.5 Hybrid / Plug-in Hybrid (131 / 145 / 160 / 163 / 225 kW)"] },
+          { name: "Yaris / C-HR / Corolla Cross (1999–2026)", engines: ["1.0 VVT-i (48 / 51 / 53 kW)", "1.33 Dual VVT-i (73 / 74 kW)", "1.5 VVT-i / Hybrid (64 / 74 / 85 / 92 kW)", "1.4 D-4D (66 kW)", "1.8 Hybrid (90 / 103 kW)", "2.0 Hybrid (112 / 135 / 145 kW)"] }
         ]
       },
       "Ford": {
         code: "FRD",
         models: [
-          { name: "Escort / Fiesta / Sierra / Mondeo Mk1–Mk2 (1980–2000)", engines: ["1.4 / 1.6 / 1.8 / 2.0 Zetec / CVH", "1.8 D / 1.8 TD (44/51/66 kW / Endura)", CUSTOM_ENGINE_LABEL] },
-          { name: "Focus Mk1 (1998–2004)", engines: ["1.4 / 1.6 / 1.8 / 2.0 16V Zetec (55/74/85/96 kW)", "1.8 TDCi / TDDi (55/66/74/85 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "Mondeo Mk3 / Mk4 / Mk5 (2000–2022)", engines: ["1.8 / 2.0 / 2.3 / 2.5 Duratec / EcoBoost", "1.8 / 2.0 / 2.2 TDCi & EcoBlue (66–154 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "Focus Mk2 / Mk3 / Mk4 (2004–2026)", engines: ["1.4 / 1.6 / 2.0 Duratec Ti-VCT", "1.0 / 1.5 / 1.6 / 2.0 EcoBoost", "1.5 / 1.6 / 1.8 / 2.0 TDCi & EcoBlue (66–140 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "Kuga / Galaxy / S-Max / Transit (2000–2026)", engines: ["2.0 TDCi / EcoBlue (85–140 kW)", "2.2 TDCi (92–147 kW)", "1.5 / 2.0 EcoBoost / Hybrid", CUSTOM_ENGINE_LABEL] }
+          { name: "Escort / Fiesta / Sierra / Mondeo Mk1–Mk2 (1980–2000)", engines: ["1.4 / 1.6 / 1.8 / 2.0 Zetec / CVH (51–100 kW)", "1.8 D (44 kW / Endura-D)", "1.8 TD (51 / 66 kW / Endura-TD)"] },
+          { name: "Focus Mk1 (1998–2004)", engines: ["1.4 16V Zetec (55 kW)", "1.6 16V Zetec (74 kW)", "1.8 16V Zetec (85 kW)", "2.0 16V Zetec (96 kW)", "1.8 TDDi (55 / 66 kW)", "1.8 TDCi (74 / 85 kW)"] },
+          { name: "Mondeo Mk3 / Mk4 / Mk5 (2000–2022)", engines: ["1.8 / 2.0 / 2.3 / 2.5 Duratec & EcoBoost", "1.8 TDCi (74 / 92 kW)", "2.0 TDCi / EcoBlue (85 / 96 / 100 / 103 / 110 / 120 / 132 / 140 kW)", "2.2 TDCi (114 / 129 / 147 kW)"] },
+          { name: "Focus Mk2 / Mk3 / Mk4 (2004–2026)", engines: ["1.4 / 1.6 / 2.0 Duratec Ti-VCT (59–110 kW)", "1.0 EcoBoost (74 / 88 / 92 / 103 kW)", "1.5 / 1.6 / 2.0 EcoBoost (110–206 kW)", "1.5 TDCi / EcoBlue (70 / 75 / 88 kW)", "1.6 TDCi (66 / 70 / 80 / 85 kW)", "1.8 TDCi (85 kW)", "2.0 TDCi / EcoBlue (81 / 85 / 100 / 103 / 110 / 120 / 136 / 140 kW)"] },
+          { name: "Kuga / Galaxy / S-Max / Transit (2000–2026)", engines: ["2.0 TDCi / EcoBlue (85 / 96 / 100 / 103 / 110 / 120 / 132 / 140 kW)", "2.2 TDCi (92 / 103 / 114 / 129 / 147 kW)", "1.5 / 2.0 EcoBoost / Hybrid"] }
         ]
       },
       "Hyundai": {
         code: "HYU",
         models: [
-          { name: "Accent / Elantra / Getz / Matrix (1994–2011)", engines: ["1.3 / 1.4 / 1.5 / 1.6 / 2.0", "1.5 CRDi / 2.0 CRDi (60–103 kW / D3EA/D4EA)", CUSTOM_ENGINE_LABEL] },
-          { name: "Tucson JM / ix35 (2004–2015)", engines: ["2.0 16V / 1.6 GDi", "2.0 CRDi (83/100/103/135 kW / D4EA/D4HA)", "1.7 CRDi (85 kW / D4FD)", CUSTOM_ENGINE_LABEL] },
-          { name: "i30 FD / GD / PD (2007–2025)", engines: ["1.4 / 1.6 CVVT / GDi", "1.0 / 1.4 / 1.5 T-GDI (88–118 kW)", "1.6 CRDi (66/81/85/94/100 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "Tucson TL / NX4 / Santa Fe (2015–2026)", engines: ["1.6 / 1.7 / 2.0 CRDi", "1.6 T-GDI / Hybrid / Plug-in Hybrid", CUSTOM_ENGINE_LABEL] }
+          { name: "Accent / Elantra / Getz / Matrix (1994–2011)", engines: ["1.3 / 1.4 / 1.5 / 1.6 / 2.0 Benzín", "1.5 CRDi (60 / 65 / 75 / 81 kW / D3EA, D4FA)", "2.0 CRDi (83 / 103 kW / D4EA)"] },
+          { name: "Tucson JM / ix35 (2004–2015)", engines: ["2.0 16V CVVT (104 / 120 kW)", "1.6 GDi (99 kW)", "1.7 CRDi (85 kW / D4FD)", "2.0 CRDi (83 / 100 / 103 / 135 kW / D4EA, D4HA)"] },
+          { name: "i30 FD / GD / PD (2007–2025)", engines: ["1.4 CVVT / MPI (73 / 80 kW)", "1.6 CVVT / GDi (85 / 90 / 93 / 99 kW)", "1.0 / 1.4 / 1.5 T-GDI (88 / 99 / 103 / 118 kW)", "1.6 CRDi (66 / 81 / 85 / 94 / 100 kW)"] },
+          { name: "Tucson TL / NX4 / Santa Fe (2015–2026)", engines: ["1.6 CRDi (85 / 100 kW)", "1.7 CRDi (85 / 104 kW)", "2.0 CRDi (100 / 136 / 137 / 147 kW)", "2.2 CRDi (147 / 148 kW)", "1.6 T-GDI / Hybrid / Plug-in Hybrid"] }
         ]
       },
       "Kia": {
         code: "KIA",
         models: [
-          { name: "Rio / Cerato / Carens (2000–2018)", engines: ["1.4 / 1.6 / 2.0", "1.5 / 1.6 / 2.0 CRDi", CUSTOM_ENGINE_LABEL] },
-          { name: "Sportage JE / SL / QL / NQ5 (2004–2026)", engines: ["1.6 / 2.0 GDi / T-GDI / Hybrid", "1.7 / 2.0 CRDi (85–136 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "Ceed ED / JD / CD (2006–2025)", engines: ["1.4 / 1.6 CVVT / GDi / 1.0 / 1.4 / 1.5 T-GDI", "1.6 CRDi (66/81/85/94/100 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "Sorento BL / XM / UM / MQ4 (2002–2026)", engines: ["2.5 CRDi (103/125 kW)", "2.2 CRDi (145/147/148 kW)", "Hybrid / Plug-in Hybrid", CUSTOM_ENGINE_LABEL] }
+          { name: "Rio / Cerato / Carens (2000–2018)", engines: ["1.4 / 1.6 / 2.0 Benzín", "1.5 CRDi (65 / 75 / 81 kW)", "1.6 CRDi (85 / 94 / 100 kW)", "1.7 CRDi (85 / 104 kW)", "2.0 CRDi (83 / 103 kW)"] },
+          { name: "Sportage JE / SL / QL / NQ5 (2004–2026)", engines: ["1.6 GDi / T-GDI (97 / 99 / 110 / 130 / 132 kW)", "2.0 CVVT / GDi / T-GDI", "1.7 CRDi (85 / 104 kW)", "2.0 CRDi (83 / 100 / 103 / 135 / 136 kW)", "Hybrid / Plug-in Hybrid"] },
+          { name: "Ceed ED / JD / CD (2006–2025)", engines: ["1.4 / 1.6 CVVT / GDi", "1.0 / 1.4 / 1.5 T-GDI (88 / 99 / 103 / 118 kW)", "1.6 CRDi (66 / 81 / 85 / 94 / 100 kW)"] },
+          { name: "Sorento BL / XM / UM / MQ4 (2002–2026)", engines: ["2.5 CRDi (103 / 125 kW)", "2.2 CRDi (145 / 147 / 148 kW)", "Hybrid / Plug-in Hybrid"] }
         ]
       },
       "Peugeot": {
         code: "PEU",
         models: [
-          { name: "205 / 306 / 405 / 406 (1983–2004)", engines: ["1.1 / 1.4 / 1.6 / 1.8 / 2.0 (TU / XU)", "1.8 / 1.9 D / TD (XUD7 / XUD9)", "2.0 HDi (66/80 kW / RHY/RHS/RHZ)", CUSTOM_ENGINE_LABEL] },
-          { name: "206 / 207 / 307 / 407 (1998–2012)", engines: ["1.4 / 1.6 16V / VTi", "1.4 / 1.6 HDi (50/66/68/80/82 kW)", "2.0 HDi (79/100/103/120 kW / RHR/RHH/RHF)", CUSTOM_ENGINE_LABEL] },
-          { name: "208 / 308 / 508 / 3008 / 5008 (2012–2026)", engines: ["1.2 PureTech / Hybrid (60–100 kW)", "1.6 THP / PureTech", "1.5 / 1.6 / 2.0 BlueHDi (73/75/88/96/110/130 kW)", CUSTOM_ENGINE_LABEL] }
+          { name: "205 / 306 / 405 / 406 (1983–2004)", engines: ["1.1 / 1.4 / 1.6 / 1.8 / 2.0 Benzín (TU / XU)", "1.8 / 1.9 D / TD (44 / 51 / 55 / 66 / 68 kW / XUD7, XUD9)", "2.0 HDi (66 / 80 kW / RHY, RHS, RHZ)"] },
+          { name: "206 / 207 / 307 / 407 (1998–2012)", engines: ["1.4 / 1.6 16V / VTi (55 / 65 / 80 / 81 / 88 kW)", "1.4 HDi (50 kW / 8HZ)", "1.6 HDi (66 / 68 / 80 / 82 kW / 9HX, 9HZ, 9HR)", "2.0 HDi (79 / 100 / 103 / 120 kW / RHR, RHH)"] },
+          { name: "208 / 308 / 508 / 3008 / 5008 (2012–2026)", engines: ["1.2 PureTech / Hybrid (60 / 74 / 81 / 96 / 100 kW)", "1.6 THP / PureTech (110 / 115 / 121 / 133 / 165 kW)", "1.5 BlueHDi (73 / 75 / 96 kW / DV5)", "1.6 BlueHDi (73 / 75 / 88 kW / DV6)", "2.0 BlueHDi (110 / 120 / 130 / 133 kW / DW10)"] }
         ]
       },
       "Renault": {
         code: "REN",
         models: [
-          { name: "Clio I / II / Mégane I / Scénic I (1990–2003)", engines: ["1.2 / 1.4 / 1.6 / 1.8 / 2.0 (E7F/K7M/K4M/F4R)", "1.9 D / 1.9 dTi (47/59/72 kW / F8Q/F9Q)", CUSTOM_ENGINE_LABEL] },
-          { name: "Laguna II / Mégane II / Scénic II (2001–2009)", engines: ["1.6 16V / 2.0 16V / 2.0 Turbo (K4M/F4R)", "1.5 dCi (60/63/74/76/78 kW / K9K)", "1.9 dCi (68/74/81/88/96 kW / F9Q)", "2.0 dCi (110/127/131 kW / M9R)", CUSTOM_ENGINE_LABEL] },
-          { name: "Mégane III–IV / Laguna III / Talisman / Kadjar / Captur (2008–2026)", engines: ["1.2 / 1.3 TCe / Hybrid", "1.5 dCi / Blue dCi (66/70/81/85 kW / K9K)", "1.6 dCi (96/118 kW / R9M)", "2.0 dCi (96–131 kW / M9R)", CUSTOM_ENGINE_LABEL] }
+          { name: "Clio I / II / Mégane I / Scénic I (1990–2003)", engines: ["1.2 / 1.4 / 1.6 / 1.8 / 2.0 Benzín (E7F, K7M, K4M, F4R)", "1.9 D (47 kW / F8Q)", "1.9 dTi (59 / 72 kW / F9Q)"] },
+          { name: "Laguna II / Mégane II / Scénic II (2001–2009)", engines: ["1.6 16V (82 / 83 kW / K4M)", "2.0 16V / 2.0 Turbo (99 / 120 / 125 / 150 kW / F4R)", "1.5 dCi (60 / 63 / 74 / 76 / 78 kW / K9K)", "1.9 dCi (68 / 74 / 81 / 88 / 96 kW / F9Q)", "2.0 dCi (110 / 127 / 131 kW / M9R)"] },
+          { name: "Mégane III–IV / Laguna III / Talisman / Kadjar / Captur (2008–2026)", engines: ["1.2 TCe (85 / 96 / 97 kW / H5F)", "1.3 TCe / Hybrid (103 / 116 / 118 kW / H5H)", "1.5 dCi / Blue dCi (66 / 70 / 81 / 85 kW / K9K)", "1.6 dCi (96 / 118 kW / R9M)", "2.0 dCi / Blue dCi (96 / 110 / 127 / 131 / 140 kW / M9R)"] }
         ]
       },
       "Volvo": {
         code: "VOL",
         models: [
-          { name: "240 / 740 / 850 / S70 / V70 I (1975–2000)", engines: ["2.0 / 2.3 / 2.4 / 2.5 (B200/B230/B5252/B5254)", "2.4 D / 2.5 TDI (D24/D5252T)", CUSTOM_ENGINE_LABEL] },
-          { name: "S60 I / V70 II / XC70 (2000–2009)", engines: ["2.4 / 2.4T / T5 / 2.5T", "2.4 D / D5 (93/96/120/136 kW / D5244T)", CUSTOM_ENGINE_LABEL] },
-          { name: "XC90 I (2002–2014)", engines: ["D5 (120/136/147 kW / D5244T)", "2.5T / 3.2 / T6 / V8", CUSTOM_ENGINE_LABEL] },
-          { name: "V40 / S60 II–III / V60 / XC60 / XC90 II (2010–2026)", engines: ["1.6 / 2.0 D2 / D3 / D4 / D5 (84–173 kW)", "T3 / T4 / T5 / T6 / B4 / B5 / T8 Recharge", CUSTOM_ENGINE_LABEL] }
+          { name: "240 / 740 / 850 / S70 / V70 I (1975–2000)", engines: ["2.0 / 2.3 / 2.4 / 2.5 Benzín (B200, B230, B5252, B5254)", "2.4 D (60 kW / D24)", "2.5 TDI (103 kW / D5252T)"] },
+          { name: "S60 I / V70 II / XC70 (2000–2009)", engines: ["2.4 / 2.4T / T5 / 2.5T (103–191 kW)", "2.4 D (93 / 96 kW / D5244T2, D5244T7)", "D5 (120 / 136 kW / D5244T, D5244T4)"] },
+          { name: "XC90 I (2002–2014)", engines: ["D5 (120 / 136 / 147 kW / D5244T)", "2.5T (154 kW)", "3.2 (175 kW)", "T6 / V8 (200 / 232 kW)"] },
+          { name: "V40 / S60 II–III / V60 / XC60 / XC90 II (2010–2026)", engines: ["1.6 D2 (84 kW)", "2.0 D2 / D3 / D4 / D5 (88 / 110 / 120 / 133 / 140 / 158 / 165 / 173 kW)", "T3 / T4 / T5 / T6 / B4 / B5 / T8 Recharge Hybrid"] }
         ]
       },
       "Opel": {
         code: "OPE",
         models: [
-          { name: "Kadett E / Astra F / Vectra A (1984–1998)", engines: ["1.4 / 1.6 / 1.8 / 2.0 (C14NZ/X16SZ/X16XEL/C20NE/X20XEV)", "1.7 D / 1.7 TD (42/44/50/60 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "Astra G / Vectra B / Zafira A (1998–2005)", engines: ["1.6 / 1.8 / 2.0 / 2.2 (X16XEL/Z16XE/X18XE1/Z18XE/Z20LET)", "1.7 DTI / 2.0 DTI / 2.2 DTI (55/74/85/92 kW / Y17DT/Y20DTH/Y22DTR)", CUSTOM_ENGINE_LABEL] },
-          { name: "Astra H / Vectra C / Zafira B (2004–2014)", engines: ["1.4 / 1.6 / 1.8 / 2.0 Turbo (Z16XER/Z18XER/Z20LEL)", "1.3 / 1.7 / 1.9 CDTI (66/74/81/88/92/110 kW / Z19DT/Z19DTH)", CUSTOM_ENGINE_LABEL] },
-          { name: "Astra J / Astra K / Astra L / Insignia / Mokka (2009–2026)", engines: ["1.4 / 1.5 / 1.6 Turbo / Hybrid", "1.6 / 2.0 CDTI (70/81/88/96/100/118/125/143 kW)", CUSTOM_ENGINE_LABEL] }
+          { name: "Kadett E / Astra F / Vectra A (1984–1998)", engines: ["1.4 (44 / 60 kW / C14NZ, X14NZ)", "1.6 (52 / 55 / 74 kW / C16NZ, X16SZ, X16XEL)", "1.8 (66 / 85 / 92 kW)", "2.0 (85 / 100 / 110 kW / C20NE, X20XEV, C20XE)", "1.7 D / 1.7 TD (42 / 44 / 50 / 60 kW)"] },
+          { name: "Astra G / Vectra B / Zafira A (1998–2005)", engines: ["1.6 16V (74 / 75 kW / X16XEL, Z16XE)", "1.8 16V (85 / 92 kW / X18XE1, Z18XE)", "2.0 16V / Turbo (100 / 141 / 147 kW / X20XEV, Z20LET)", "2.2 16V (108 kW / Z22SE)", "1.7 DTI (55 kW / Y17DT)", "2.0 DTI (60 / 74 kW / Y20DTL, Y20DTH)", "2.2 DTI (86 / 92 kW / Y22DTR)"] },
+          { name: "Astra H / Vectra C / Zafira B (2004–2014)", engines: ["1.4 / 1.6 / 1.8 / 2.0 Turbo (66–177 kW)", "1.3 CDTI (66 kW / Z13DTH)", "1.7 CDTI (59 / 74 / 81 / 88 / 92 kW)", "1.9 CDTI (74 / 88 / 110 kW / Z19DTL, Z19DT, Z19DTH)"] },
+          { name: "Astra J / Astra K / Astra L / Insignia / Mokka (2009–2026)", engines: ["1.4 Turbo / 1.5 Turbo / 1.6 Turbo / Hybrid", "1.6 CDTI (70 / 81 / 88 / 100 kW)", "2.0 CDTI (81 / 96 / 118 / 121 / 125 / 143 kW)"] }
         ]
       },
       "Citroën": {
         code: "CIT",
         models: [
-          { name: "BX / Saxo / Xsara / Xantia (1982–2004)", engines: ["1.1 / 1.4 / 1.6 / 1.8 / 2.0", "1.8 / 1.9 D / TD / 2.0 HDi (44–80 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "C3 / C4 I / C5 I–II / Picasso (2000–2010)", engines: ["1.4 / 1.6 / 2.0", "1.4 / 1.6 / 2.0 HDi (50/66/80/100 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "C4 II–III / C5 X7 / C5 Aircross / Berlingo (2008–2026)", engines: ["1.2 PureTech / Hybrid", "1.5 / 1.6 / 2.0 BlueHDi (73/75/88/96/110/130 kW)", CUSTOM_ENGINE_LABEL] }
+          { name: "BX / Saxo / Xsara / Xantia (1982–2004)", engines: ["1.1 / 1.4 / 1.6 / 1.8 / 2.0 Benzín", "1.8 / 1.9 D / TD (44 / 50 / 51 / 66 / 68 kW)", "2.0 HDi (66 / 80 kW)"] },
+          { name: "C3 / C4 I / C5 I–II / Picasso (2000–2010)", engines: ["1.4 / 1.6 / 2.0 Benzín", "1.4 HDi (50 kW)", "1.6 HDi (66 / 68 / 80 kW)", "2.0 HDi (79 / 80 / 100 kW)"] },
+          { name: "C4 II–III / C5 X7 / C5 Aircross / Berlingo (2008–2026)", engines: ["1.2 PureTech / Hybrid (60 / 74 / 81 / 96 / 100 kW)", "1.5 BlueHDi (73 / 75 / 96 kW)", "1.6 BlueHDi (73 / 75 / 88 kW)", "2.0 BlueHDi (110 / 120 / 130 / 133 kW)"] }
         ]
       },
       "Seat": {
         code: "SEA",
         models: [
-          { name: "Ibiza II / Córdoba / Toledo I (1993–1999)", engines: ["1.4 / 1.6 / 1.8 / 2.0", "1.9 D / SDI / TDI (47/50/66/81 kW / 1Z/AFN)", CUSTOM_ENGINE_LABEL] },
-          { name: "Leon 1M / Toledo II (1999–2006)", engines: ["1.4 / 1.6 / 1.8 / 1.8T / 2.3 V5", "1.9 TDI (66/74/81/96/110 kW / AGR/ALH/ASV/ASZ/ARL)", CUSTOM_ENGINE_LABEL] },
-          { name: "Leon 1P / 5F / KL & Ateca / Ibiza (2005–2026)", engines: ["1.2 / 1.4 / 1.5 / 1.8 / 2.0 TSI", "1.6 TDI (66/77/81/85 kW)", "1.9 / 2.0 TDI (77/103/110/125/135/140/147 kW)", CUSTOM_ENGINE_LABEL] }
+          { name: "Ibiza II / Córdoba / Toledo I (1993–1999)", engines: ["1.4 (44 / 60 kW)", "1.6 (55 / 74 kW)", "1.8 / 2.0 (66 / 85 / 110 kW)", "1.9 D (47 kW)", "1.9 SDI (47 kW)", "1.9 TDI (66 kW / 1Z, AHU)", "1.9 TDI (81 kW / AFN)"] },
+          { name: "Leon 1M / Toledo II (1999–2006)", engines: ["1.4 16V (55 kW / AXP, BCA)", "1.6 (74 / 77 kW / AEH, AKL, AUS, AZD, BCB)", "1.8 20V (92 kW / AGN)", "1.8T 20V (132 / 154 / 165 kW / AUQ, AMK, BAM)", "2.3 V5 (110 / 125 kW)", "1.9 TDI (66 kW / AGR, ALH)", "1.9 TDI (81 kW / AHF, ASV)", "1.9 TDI PD (74 kW / AXR)", "1.9 TDI PD (96 kW / ASZ)", "1.9 TDI PD (110 kW / ARL)"] },
+          { name: "Leon 1P / 5F / KL & Ateca / Ibiza (2005–2026)", engines: ["1.2 TSI (63 / 77 / 81 kW)", "1.4 TSI (90 / 92 / 103 / 110 kW)", "1.5 TSI (110 kW)", "1.8 TSI (118 / 132 kW)", "2.0 TSI / Cupra (140 / 147 / 155 / 195 / 206 / 221 / 228 kW)", "1.6 TDI (66 / 77 / 81 / 85 kW)", "1.9 TDI (77 kW)", "2.0 TDI (100 / 103 / 110 / 125 / 135 / 140 / 147 kW)"] }
         ]
       },
       "Honda": {
         code: "HON",
         models: [
-          { name: "Civic EG / EK / EJ / MB (1991–2001)", engines: ["1.4 / 1.5 / 1.6 i / VTEC (D14/D15/D16/B16)", "2.0 TDi (63/77 kW / Rover)", CUSTOM_ENGINE_LABEL] },
-          { name: "Civic VII–VIII / Accord VII–VIII (2001–2015)", engines: ["1.4 / 1.6 / 1.8 i-VTEC / 2.0 / 2.4 i-VTEC (R18/K20/K24)", "1.7 CTDi (74 kW) / 2.2 i-CTDi / i-DTEC (103/110/132 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "CR-V / Civic X–XI / HR-V (2007–2026)", engines: ["1.6 / 2.2 i-DTEC (88/110/118 kW)", "1.5 VTEC Turbo / 2.0 e:HEV Hybrid", CUSTOM_ENGINE_LABEL] }
+          { name: "Civic EG / EK / EJ / MB (1991–2001)", engines: ["1.4 i / 1.4 iS (55 / 66 kW / D14A)", "1.5 i VTEC-E (66 / 84 kW / D15Z)", "1.6 i / VTi (84 / 92 / 118 kW / D16, B16A2)", "2.0 TDi (63 / 77 kW)"] },
+          { name: "Civic VII–VIII / Accord VII–VIII (2001–2015)", engines: ["1.4 / 1.6 / 1.8 i-VTEC (61 / 66 / 81 / 103 kW / L13, D16, R18)", "2.0 / 2.4 i-VTEC (114 / 148 kW / K20, K24)", "1.7 CTDi (74 kW / 4EE2)", "2.2 i-CTDi (103 kW / N22A)", "2.2 i-DTEC (110 / 132 kW / N22B)"] },
+          { name: "CR-V / Civic X–XI / HR-V (2007–2026)", engines: ["1.6 i-DTEC (88 / 118 kW / N16A)", "2.2 i-DTEC (110 / 132 kW / N22B)", "1.5 VTEC Turbo (134 kW / L15B)", "2.0 e:HEV Hybrid (105 / 135 kW)"] }
         ]
       },
       "Nissan": {
         code: "NIS",
         models: [
-          { name: "Micra / Almera N15–N16 / Primera P10–P11 (1990–2006)", engines: ["1.4 / 1.5 / 1.6 / 1.8 / 2.0 (GA/QG/SR)", "2.0 D / TD / Di (55/66/74/81 kW / CD20/YD22)", CUSTOM_ENGINE_LABEL] },
-          { name: "X-Trail T30 / T31 / Qashqai J10 (2001–2013)", engines: ["1.5 / 1.6 / 2.0 dCi (76/78/81/96/110/127 kW / K9K/M9R/YD22)", "1.6 / 2.0 Benzín", CUSTOM_ENGINE_LABEL] },
-          { name: "Qashqai J11–J12 / X-Trail T32–T33 (2014–2026)", engines: ["1.5 / 1.6 / 1.7 dCi (81/96/110 kW)", "1.2 / 1.3 DIG-T / e-POWER", CUSTOM_ENGINE_LABEL] }
+          { name: "Micra / Almera N15–N16 / Primera P10–P11 (1990–2006)", engines: ["1.4 / 1.5 / 1.6 / 1.8 / 2.0 Benzín (GA, QG, SR)", "2.0 D / TD / Di (55 / 66 / 74 / 81 kW / CD20, YD22)"] },
+          { name: "X-Trail T30 / T31 / Qashqai J10 (2001–2013)", engines: ["1.6 / 2.0 Benzín (84 / 103 / 104 kW)", "1.5 dCi (76 / 78 / 81 kW / K9K)", "1.6 dCi (96 kW / R9M)", "2.0 dCi (110 / 127 kW / M9R)", "2.2 dCi (100 kW / YD22)"] },
+          { name: "Qashqai J11–J12 / X-Trail T32–T33 (2014–2026)", engines: ["1.2 DIG-T (85 kW / HRA2)", "1.3 DIG-T / e-POWER (103 / 116 / 118 / 140 / 150 / 157 kW)", "1.5 dCi (81 kW / K9K)", "1.6 dCi (96 kW / R9M)", "1.7 dCi (110 kW / R9N)", "2.0 dCi (130 kW / M9R)"] }
         ]
       },
       "Mazda": {
         code: "MAZ",
         models: [
-          { name: "323 / 626 / Premacy (1989–2005)", engines: ["1.5 / 1.6 / 1.8 / 2.0 Benzín", "2.0 DiTD / CD (66/74/81/89/100 kW / RF)", CUSTOM_ENGINE_LABEL] },
-          { name: "Mazda 3 BK / BL / BM / BP (2003–2026)", engines: ["1.4 / 1.6 / 2.0 / 2.3 Benzín & Skyactiv-G / Skyactiv-X", "1.6 / 2.2 CD / Skyactiv-D (80/85/105/110/136 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "Mazda 6 GG / GH / GJ & CX-5 (2002–2026)", engines: ["1.8 / 2.0 / 2.3 / 2.5 Benzín & Skyactiv", "2.0 / 2.2 CD / Skyactiv-D (89/103/110/120/129/135 kW)", CUSTOM_ENGINE_LABEL] }
+          { name: "323 / 626 / Premacy (1989–2005)", engines: ["1.5 / 1.6 / 1.8 / 2.0 Benzín", "2.0 DiTD / CD (66 / 74 / 81 / 89 / 100 kW / RF)"] },
+          { name: "Mazda 3 BK / BL / BM / BP (2003–2026)", engines: ["1.4 / 1.6 / 2.0 / 2.3 Benzín (62–121 kW)", "1.5 / 2.0 Skyactiv-G / Skyactiv-X (74 / 88 / 110 / 121 / 131 / 137 kW)", "1.6 CD (80 / 85 kW)", "2.2 CD / Skyactiv-D (110 / 136 kW)"] },
+          { name: "Mazda 6 GG / GH / GJ & CX-5 (2002–2026)", engines: ["1.8 / 2.0 / 2.3 / 2.5 Benzín & Skyactiv-G (88–143 kW)", "2.0 CD / Skyactiv-D (89 / 103 / 105 / 110 kW)", "2.2 CD / Skyactiv-D (110 / 120 / 129 / 135 kW)"] }
         ]
       },
       "Fiat": {
         code: "FIA",
         models: [
-          { name: "Punto Mk1–Mk2 / Bravo / Brava / Marea (1993–2007)", engines: ["1.2 8V / 1.2 16V / 1.4 / 1.6 / 1.8", "1.9 JTD (59/74/77/85/88 kW)", CUSTOM_ENGINE_LABEL] },
-          { name: "Grande Punto / Bravo II / Tipo / Doblo / Ducato (2005–2026)", engines: ["1.3 / 1.6 / 2.0 Multijet (55–130 kW)", "1.4 T-Jet / Fire / Hybrid", CUSTOM_ENGINE_LABEL] }
+          { name: "Punto Mk1–Mk2 / Bravo / Brava / Marea (1993–2007)", engines: ["1.2 8V / 1.2 16V (44 / 51 / 59 / 63 kW)", "1.4 / 1.6 / 1.8 Benzín (57–108 kW)", "1.9 JTD (59 / 74 / 77 / 85 / 88 kW)"] },
+          { name: "Grande Punto / Bravo II / Tipo / Doblo / Ducato (2005–2026)", engines: ["1.3 Multijet (55 / 62 / 66 / 70 kW)", "1.6 Multijet (77 / 88 / 96 kW)", "2.0 Multijet (100 / 110 / 121 / 125 kW)", "2.3 / 3.0 Multijet Ducato (88–130 kW)", "1.4 T-Jet / Fire / Hybrid"] }
         ]
       },
       "Dacia": {
         code: "DAC",
         models: [
-          { name: "Logan I–II / Sandero I–II / Duster I (2004–2018)", engines: ["1.2 16V / 1.4 / 1.6 MPI / 1.6 16V / 1.2 TCe", "1.5 dCi (50/55/63/65/66/75/78/80/81 kW / K9K)", CUSTOM_ENGINE_LABEL] },
-          { name: "Duster II–III / Sandero III / Jogger (2018–2026)", engines: ["1.0 TCe / ECO-G LPG (67/74/81 kW)", "1.3 TCe (96/110 kW)", "1.5 Blue dCi (70/85 kW)", "Hybrid 140", CUSTOM_ENGINE_LABEL] }
+          { name: "Logan I–II / Sandero I–II / Duster I (2004–2018)", engines: ["1.2 16V (55 kW / D4F)", "1.4 MPI (55 kW / K7J)", "1.6 MPI / 16V (62 / 64 / 77 / 84 kW / K7M, K4M)", "1.2 TCe (85 / 92 kW / H5F)", "1.5 dCi (50 / 55 / 63 / 65 / 66 / 75 / 78 / 80 / 81 kW / K9K)"] },
+          { name: "Duster II–III / Sandero III / Jogger (2018–2026)", engines: ["1.0 TCe / ECO-G LPG (67 / 74 / 81 kW)", "1.3 TCe (96 / 110 kW)", "1.5 Blue dCi (70 / 85 kW)", "Hybrid 140 (104 kW)"] }
         ]
       }
     };
 
     const PARTS = {
       battery: {
+        label: "🔋 Batéria & štart",
         title: "12V Batéria, alternátor a štartér",
-        steps: [
-          "Zmerajte napätie batérie v pokoji (správne ~12,5–12,7 V) a pri bežiacom motore (~13,8–14,4 V).",
-          "Skontrolujte ukostrenie motora, karosérie a svorky na oxidáciu alebo uvoľnenie.",
-          "Pri novších autách so Start-Stop / BMS po výmene batérie zaregistrujte nový akumulátor."
+        faults: [
+          "Vybitá alebo sulfatovaná batéria (nedrží napätie, po pár dňoch nenatočí).",
+          "Zlé dobíjanie alternátorom (opotrebované uhlíky, regulátor alebo zaseknutá voľnobežka).",
+          "Zaoxidované svorky, zlá kostra motora/karosérie alebo opotrebovaný štartér (cvakanie / voľnobeh štartéra)."
         ],
+        howToFix: [
+          "Zmerajte napätie batérie v pokoji (~12,5–12,7 V) a pri naštartovanom motore (~13,8–14,4 V); ak nedobíja, skontrolujte alternátor a budenie.",
+          "Odpojte najprv mínus (-), potom plus (+), očistite svorky a kostrový bod na karosérii/prevodovke, natrite ochranným tukom.",
+          "Pri novších autách s BMS / Start-Stop po výmene batérie vykonajte registráciu batérie cez diagnostiku."
+        ],
+        fuses: [
+          "Hlavné poistky na plusovom póle / poistkovom boxe v motorovom priestore (vysokoprúdové poistky pre alternátor, štartér a napájanie ECU).",
+          "Poistka riadiacej jednotky / budenia alternátora – skontrolujte vizuálne aj meraním napätia na oboch kontaktoch poistky."
+        ],
+        schematic: "12V Batéria (+) -> Hlavná poistka / rozvodnica v motore -> Štartér (hlavný prúd + spínacia cievka od spínacej skrinky/štart tlačidla) a Alternátor (B+ do batérie + LIN/DF signál do ECU/BMS) -> Kostra (-) na motor a karosériu.",
         partsList: [
-          "12V autobatéria (AGM / EFB / štandardná podľa výbavy)",
-          "Alternátor alebo regulátor napätia / voľnobežka",
-          "Štartér, ukostrovací kábel a svorky pólu"
+          "12V autobatéria (AGM / EFB / štandardná podľa výbavy a rozmerov)",
+          "Alternátor, regulátor napätia alebo voľnobežka alternátora",
+          "Štartér, ukostrovací kábel, svorky batérie alebo drážkový remeň"
         ],
         diy: "85 – 190 €",
         service: "130 – 280 €"
       },
       engine: {
+        label: "⚙️ Motor & rozvody",
         title: "Motor, rozvody a snímače",
-        steps: [
-          "Skontrolujte hladinu a stav oleja, prípadné úniky okolo veka ventilov a podtlakové hadice.",
-          "Pri podozrení na nepravidelný chod skontrolujte palivový systém, zapaľovanie alebo snímač vačky/kľuky.",
-          "Dodržte interval výmeny rozvodov a vodnej pumpy podľa ročníka a kódu motora."
+        faults: [
+          "Preskočené, opotrebované alebo hlučné rozvody (remeň alebo rozvodová reťaz, napínacie kladky).",
+          "Únik oleja okolo veka ventilov, gufier alebo chladiča oleja; zvýšená spotreba oleja.",
+          "Nepravidelný chod, trhavé zrýchľovanie alebo nenštartovanie kvôli zapaľovaniu, vstrekovaniu alebo snímaču kľuky/vačky."
         ],
+        howToFix: [
+          "Skontrolujte hladinu a kvalitu oleja, odposlechnite motor za studena (kovové hrkotanie reťaze/kladiek) a skontrolujte tesnenia.",
+          "Pri vynechávaní valcov vyčítajte chyby, skontrolujte sviečky/cievky (benzín) alebo žhaviče/vstreky (diesel) a konektory snímačov.",
+          "Pri výmene rozvodov vždy použite aretačné prípravky podľa kódu motora, vymeňte celú sadu + vodnú pumpu a dodržte uťahovacie momenty."
+        ],
+        fuses: [
+          "Poistky v motorovom boxe pre riadiacu jednotku motora (ECU), vstrekovače, zapaľovacie cievky, palivové čerpadlo a žhaviace relé.",
+          "Ak motor točí, ale nechytí, skontrolujte najskôr poistku palivového čerpadla a napájania ECU."
+        ],
+        schematic: "Poistka & Hlavné relé ECU -> Riadiaca jednotka motora (ECU) -> Výstupy na Zapaľovacie cievky / Vstrekovače / Palivové čerpadlo & Vstupy zo Snímača kľuky (CKP), Snímača vačky (CMP), MAF/MAP a Lambda sondy.",
         partsList: [
           "Rozvodová sada (remeň alebo reťaz + kladky) + vodná pumpa",
-          "Motorový olej, olejový/vzduchový/palivový filter",
-          "Zapaľovacie sviečky / cievky alebo žhaviče + snímač otáčok"
+          "Motorový olej, olejový, vzduchový a palivový filter + tesnenie veka ventilov",
+          "Zapaľovacie sviečky / cievky alebo žhaviče + snímač otáčok kľuky/vačky"
         ],
         diy: "60 – 360 €",
         service: "180 – 850 €"
       },
-      brakes: {
-        title: "Brzdový systém a podvozok",
-        steps: [
-          "Skontrolujte hrúbku brzdových platničiek, stav kotúčov a voľný chod vodiacich čapov.",
-          "Prezrite silentbloky ramien, čapy riadenia, tyčky stabilizátora a manžety poloos.",
-          "Pri pískaní alebo trasení pri brzdení skontrolujte rovnomerné opotrebenie oboch strán."
+      cooling: {
+        label: "🌡️ Chladenie & kúrenie",
+        title: "Chladenie motora a kúrenie kabíny",
+        faults: [
+          "Zaseknutý termostat (motor sa neohreje na ~90 °C alebo sa prehrieva).",
+          "Únik chladiacej kvapaliny cez prasknutú hadicu, chladič, vodnú pumpu alebo expanznú nádobu.",
+          "Nefunkčný ventilátor chladiča, zavzdušnený okruh alebo zanesený radiátor kúrenia (slabo kúri)."
         ],
+        howToFix: [
+          "Po vychladnutí skontrolujte hladinu a tesnosť spojov, hadíc a chladiča (stopy bieleho/farebného povlaku po odparení).",
+          "Sledujte ohrev hadíc: pri studenom motore má byť hadica ku chladiču studená, po otvorení termostatu sa zohreje.",
+          "Po oprave doplňte správnu kvapalinu, odvzdušnite okruh podľa modelu a overte spínanie ventilátora."
+        ],
+        fuses: [
+          "Veľká poistka a relé ventilátora chladiča v motorovom boxe (často 30 A – 60 A podľa výkonu ventilátora).",
+          "Poistka prídavného vodného čerpadla / ventilov kúrenia a ovládania klapiek."
+        ],
+        schematic: "Snímač teploty chladiacej kvapaliny (ECT) -> ECU / Riadenie chladenia -> Relé / regulátor ventilátora chladiča + Vodné čerpadlo / Termostat -> Malý okruh (motor + radiátor kúrenia) / Veľký okruh (chladič).",
         partsList: [
-          "Brzdové kotúče a platničky (predná alebo zadná náprava)",
-          "Rameno / silentbloky, čap riadenia, tyčky stabilizátora",
-          "Brzdová kvapalina DOT 4 / manžeta poloosi"
+          "Termostat (s tesnením alebo kompletné teleso) + chladiaca kvapalina",
+          "Vodná pumpa, expanzná nádoba, viečko nádoby, chladič alebo hadice chladenia",
+          "Snímač teploty chladiacej kvapaliny alebo ventilátor chladiča"
+        ],
+        diy: "35 – 180 €",
+        service: "95 – 360 €"
+      },
+      drivetrain: {
+        label: "🕹️ Spojka & pohon",
+        title: "Spojka, prevodovka a poloosy",
+        faults: [
+          "Opotrebovaná lamela, prítlačný tanier alebo dvojhmotový zotrvačník (preklzovanie, trasenie, klepanie).",
+          "Roztrhnutá manžeta poloosi a opotrebovaný homokinetický kĺb (cvakanie/klepanie v zákrute).",
+          "Opotrebované ložisko kolesa (hučanie rastúce s rýchlosťou) alebo nízka hladina / starý prevodový olej."
+        ],
+        howToFix: [
+          "Pri podozrení na spojku vyskúšajte krátky záťah na vyššom prevode; pri trasení pri rozjazde/zhasínaní skontrolujte zotrvačník a silentbloky.",
+          "Zdvihnite vozidlo (na bezpečných podperách), skontrolujte manžety poloosí a vôľu ložísk kolies.",
+          "Pri výmene oleja v prevodovke/DSG/automate vždy najskôr povoľte napúšťací otvor a použite predpísanú kvapalinu."
+        ],
+        fuses: [
+          "Poistka riadenia automatickej / robotizovanej prevodovky (TCU / mechatronika) a spínača spiatočky / svetiel spiatočky.",
+          "Pri pohone 4x4 / Haldex poistka alebo riadenie medzinápravovej spojky."
+        ],
+        schematic: "Motor -> Spojka / Zotrvačník -> Prevodovka (manuál / automat / DSG) -> Diferenciál & Poloosy -> Predné/Zadné kolesá (pri 4x4 cez rozvodovku/spojku náprav).",
+        partsList: [
+          "Spojková sada (lamela, prítlačný tanier, ložisko) a prípadne dvojhmotový zotrvačník",
+          "Homokinetický kĺb / poloos a manžety poloosí + spony",
+          "Prevodový olej, ložisko/náboj kolesa alebo silentblok motora/prevodovky"
+        ],
+        diy: "60 – 450 €",
+        service: "180 – 950 €"
+      },
+      exhaust: {
+        label: "💨 Výfuk / EGR / DPF",
+        title: "Výfuk, EGR ventil a DPF / katalyzátor",
+        faults: [
+          "Zakarbónovaný alebo zaseknutý EGR ventil (trhanie, dymivosť, chybový kód prietoku/polohy EGR).",
+          "Zanesený filter pevných častíc (DPF) alebo chybný snímač diferenčného tlaku / teploty výfukových plynov.",
+          "Prasknutý vlnovec/pružný dielec, netesnosť výfuku, opotrebovaná lambda sonda alebo porucha dávkovania AdBlue."
+        ],
+        howToFix: [
+          "Skontrolujte hadičky a snímač diferenčného tlaku DPF a overte, či nie je prasknutá sacia alebo podtlaková hadica.",
+          "Pri zanesenom EGR vyčistite alebo vymeňte ventil a skontrolujte, či nedochádza ku krátkym jazdám znemožňujúcim regeneráciu DPF.",
+          "Po výmene snímačov alebo DPF/EGR vykonajte adaptáciu / reset hodnôt v riadiacej jednotke."
+        ],
+        fuses: [
+          "Poistky v motorovom boxe pre vyhrievanie lambda sondy, ovládanie EGR/klapiek, dávkovanie AdBlue/močoviny alebo sekundárneho vzduchu."
+        ],
+        schematic: "Valce motora -> Zberné potrubie (odbočka na EGR ventil/chladič) -> Turbo -> Katalyzátor / DPF (snímače teploty & diferenčného tlaku) -> Lambda sondy -> Tlmič výfuku.",
+        partsList: [
+          "EGR ventil / chladič spalín + tesnenia",
+          "Snímač diferenčného tlaku DPF, lambda sonda alebo snímač teploty výfuku",
+          "Pružný výfukový dielec (vlnovec), gumové závesy výfuku alebo čistič EGR/DPF"
+        ],
+        diy: "45 – 280 €",
+        service: "120 – 700 €"
+      },
+      brakes: {
+        label: "🛑 Brzdy & podvozok",
+        title: "Brzdový systém a podvozok",
+        faults: [
+          "Zjazdené brzdové platničky, zvlnené alebo opotrebované kotúče, zadreté vodiace čapy alebo piestik strmeňa.",
+          "Vôle v čapoch riadenia, silentblokoch ramien, tyčkách stabilizátora alebo opotrebované tlmiče/pružiny.",
+          "Zavzdušnená alebo stará brzdová kvapalina (mäkký pedál, dlhšia brzdná dráha)."
+        ],
+        howToFix: [
+          "Zmerajte hrúbku platničiek a kotúčov, skontrolujte manžety piestikov a rozhýbte/vyčistite vodiace čapy strmeňov.",
+          "Páčidlom skontrolujte vôle v ramenách, čapoch a uložení stabilizátora; pri výmene bŕzd zatlačte piestik (pri zadných s EPB použite servisný režim).",
+          "Po zásahu do riadenia alebo podvozka dajte skontrolovať/nastaviť geometriu náprav."
+        ],
+        fuses: [
+          "Poistky pre ABS / ESP / ESC čerpadlo a riadiacu jednotku (často silnejšia poistka v motorovom boxe + poistka v kabíne).",
+          "Pri elektronickej parkovacej brzde (EPB) poistka/napájanie modulu parkovacej brzdy."
+        ],
+        schematic: "Brzdový pedál -> Posilňovač bŕzd -> Hlavný brzdový valec -> Hydraulický blok ABS/ESP -> Brzdové potrubie a hadice -> Brzdové strmene, kotúče a platničky na 4 kolesách.",
+        partsList: [
+          "Brzdové kotúče a platničky (predná alebo zadná náprava) + montážna sada",
+          "Predné rameno / silentbloky, čap riadenia, tyčky stabilizátora alebo tlmiče/pružiny",
+          "Brzdová kvapalina DOT 4, vodiace čapy alebo brzdové hadice"
         ],
         diy: "50 – 240 €",
         service: "120 – 450 €"
       },
-      exhaust: {
-        title: "Výfuk, EGR ventil a DPF / katalyzátor",
-        steps: [
-          "Skontrolujte tesnosť výfukového potrubia, pružný dielec a snímače teploty/tlaku výfukových plynov.",
-          "Pri starších autách sledujte zanášanie EGR ventilu, pri novších autách stav DPF a aditíva/AdBlue.",
-          "Pred výmenou drahých dielov overte únik vzduchu v sacom potrubí."
+      electrics: {
+        label: "🔌 Elektrika & snímače",
+        title: "Elektrika, poistky, riadenie a snímače",
+        faults: [
+          "Prepálená poistka alebo chybné relé (nefunguje konkrétny okruh, stierače, okná, ventilátor, zásuvka).",
+          "Chybný snímač alebo poškodený kábel/konektor (ABS/otáčky kolesa, váha vzduchu MAF, tlak/teplota).",
+          "Zvýšený odber prúdu v pokoji (vybíjanie batérie pri odstavení vozidla)."
         ],
+        howToFix: [
+          "Nájdite poistkový box v kabíne a v motorovom priestore, vyberte podozrivú poistku a skontrolujte jej prepoj alebo napätie.",
+          "Pred výmenou snímača skontrolujte čistotu konektora a neporušenosť káblového zväzku v priechodkách.",
+          "Pri nočnom vybíjaní batérie zmerajte odber multimetrom v sérii po uspatí áut (~15–30 min) a postupne vyťahujte poistky, kým odber klesne."
+        ],
+        fuses: [
+          "Kabínová poistková skrinka (svetlá, stierače, okná, centrál, rádio/infotainment, zásuvka 12V, prístrojový štít).",
+          "Motorová poistková skrinka (hlavné napájanie, chladenie, ABS, motorové relé). Vždy meňte len za rovnakú hodnotu ampérov (A)!"
+        ],
+        schematic: "Batéria (+) -> Hlavná poistka -> Poistkový box (Motor / Kabína) -> Relé / Spínač / Riadiaca jednotka (BCM / Gateway / ECU) -> Snímač alebo Akčný člen -> Kostra (-).",
         partsList: [
-          "EGR ventil / chladič spalín + tesnenia",
-          "Snímač diferenčného tlaku DPF / lambda sonda / snímač teploty",
-          "Pružný výfukový dielec, silentbloky výfuku alebo čistič DPF/EGR"
+          "Sada náhradných automobilových poistiek (mini / štandard / maxi) a príslušné relé",
+          "Snímač ABS/otáčok kolesa, váha vzduchu (MAF), snímač tlaku/teploty alebo spínač",
+          "Konektory, izolačná páska / bužírka na kabeláž alebo multimeter"
         ],
-        diy: "45 – 280 €",
-        service: "120 – 700 €"
+        diy: "20 – 160 €",
+        service: "70 – 260 €"
       }
     };
 
+    const partKeys = Object.keys(PARTS);
     const brandKeys = Object.keys(DB);
     let selectedBrand = "Škoda";
     let selectedModelIdx = 0;
-    let selectedEngineIdx = 0;
-    let customEngineText = "";
+    let selectedEngineValue = "";
     let selectedPart = "battery";
 
+    function getFilteredEngines() {
+      const allEngines = DB[selectedBrand].models[selectedModelIdx].engines;
+      const q = document.getElementById("engineFilter").value.trim().toLowerCase();
+      if (!q) return allEngines;
+      const matches = allEngines.filter(e => e.toLowerCase().includes(q));
+      return matches.length ? matches : allEngines;
+    }
+
     function getActiveEngineLabel() {
-      const engines = DB[selectedBrand].models[selectedModelIdx].engines;
-      const current = engines[selectedEngineIdx] || engines[0];
-      if (current === CUSTOM_ENGINE_LABEL) {
-        return customEngineText.trim() || "Vlastná motorizácia (nezadaný kód/kW)";
+      const list = getFilteredEngines();
+      return list.includes(selectedEngineValue) ? selectedEngineValue : list[0];
+    }
+
+    function parseEraInfo(modelName) {
+      const matches = [...modelName.matchAll(/(19\d\d|20\d\d)/g)].map(m => Number(m[1]));
+      const startYear = matches.length ? matches[0] : 2005;
+      if (startYear >= 2012) {
+        return {
+          badge: "Novšia éra (od ~2012+)",
+          summary: "Viac riadiacich jednotiek, emisných systémov (DPF/AdBlue/GPF), BMS/Start-Stop a elektroniky. Pri opravách je kľúčová diagnostika a správne údaje podľa VIN.",
+          focus: "Overte presnú revíziu motora/kódu, stav batérie/BMS, emisie a servisné intervaly podľa štýlu jazdy."
+        };
       }
-      return current;
+      return {
+        badge: "Staršia / klasická éra (do ~2011)",
+        summary: "Jednoduchšia mechanika a priamejší prístup k uzlom, no vyššie opotrebenie vekom, korózia, gumené/plastové diely, podtlaky a úniky kvapalín.",
+        focus: "Sledujte koróziu podvozka/brzdových trubiek, netesnosti, opotrebenie čapov/silentblokov a predošlý servis."
+      };
+    }
+
+    function getServicePlan(engineLabel) {
+      const e = engineLabel.toLowerCase();
+      const isDiesel = e.includes("tdi") || e.includes("cdi") || e.includes("hdi") || e.includes("dci") || e.includes("tdci") || e.includes("crdi") || e.includes("d-4d") || e.includes("cdti") || e.includes("jtd") || e.includes("multijet") || e.includes("d2") || e.includes("d3") || e.includes("d4") || e.includes("d5") || e.includes("td") || e.includes(" d");
+      const isHybrid = e.includes("hybrid") || e.includes("e-power") || e.includes("e:hev");
+
+      return {
+        engineType: isDiesel ? "Vznetový motor (Diesel)" : (isHybrid ? "Hybrid / elektrifikovaný pohon" : "Zážihový motor (Benzín / LPG)"),
+        oilInterval: isDiesel ? "10 000 – 15 000 km alebo 1 rok (zvoľte kratší pri krátkych trasách)" : "10 000 – 15 000 km alebo 1 rok",
+        timingNote: "Rozvody (remeň alebo reťaz) a vodnú pumpu riaďte presne podľa kódu motora a dielenského plánu.",
+        fluids: [
+          isDiesel ? "Motorový olej podľa špecifikácie výrobcu pre diesel + DPF (ak je prítomný)" : "Motorový olej podľa viskozity a normy výrobcu pre benzín",
+          "Brzdová kvapalina (spravidla DOT 4 – výmena každé ~2 roky)",
+          "Chladiaca kvapalina (správna farba/norma podľa výrobcu) + prevodový olej"
+        ]
+      };
     }
 
     function renderBrands(filterText = "") {
@@ -427,7 +595,6 @@
       if (filtered.length && !filtered.includes(selectedBrand)) {
         selectedBrand = filtered[0];
         selectedModelIdx = 0;
-        selectedEngineIdx = 0;
       }
       grid.innerHTML = filtered.map(brand => {
         const active = brand === selectedBrand;
@@ -446,7 +613,6 @@
     function chooseBrand(brand) {
       selectedBrand = brand;
       selectedModelIdx = 0;
-      selectedEngineIdx = 0;
       renderBrands(document.getElementById("brandFilter").value);
     }
 
@@ -457,35 +623,89 @@
       modelSelect.innerHTML = models.map((m, i) => `<option value="${i}" ${i === selectedModelIdx ? "selected" : ""}>${m.name}</option>`).join("");
       modelSelect.onchange = () => {
         selectedModelIdx = Number(modelSelect.value);
-        selectedEngineIdx = 0;
+        selectedEngineValue = DB[selectedBrand].models[selectedModelIdx].engines[0];
         renderEngines();
       };
+      selectedEngineValue = models[selectedModelIdx].engines[0];
       renderEngines();
     }
 
     function renderEngines() {
-      const engines = DB[selectedBrand].models[selectedModelIdx].engines;
-      if (selectedEngineIdx >= engines.length) selectedEngineIdx = 0;
+      const list = getFilteredEngines();
+      if (!list.includes(selectedEngineValue)) selectedEngineValue = list[0];
       const engineSelect = document.getElementById("engineSelect");
-      engineSelect.innerHTML = engines.map((e, i) => `<option value="${i}" ${i === selectedEngineIdx ? "selected" : ""}>${e}</option>`).join("");
+      engineSelect.innerHTML = list.map(e => `<option value="${e.replace(/"/g, '&quot;')}" ${e === selectedEngineValue ? "selected" : ""}>${e}</option>`).join("");
       engineSelect.onchange = () => {
-        selectedEngineIdx = Number(engineSelect.value);
-        toggleCustomEngineBox();
+        selectedEngineValue = engineSelect.value;
         updateBanner();
       };
-      toggleCustomEngineBox();
       updateBanner();
     }
 
-    function toggleCustomEngineBox() {
-      const engines = DB[selectedBrand].models[selectedModelIdx].engines;
-      const isCustom = engines[selectedEngineIdx] === CUSTOM_ENGINE_LABEL;
-      const box = document.getElementById("customEngineBox");
-      box.classList.toggle("hidden", !isCustom);
-      box.classList.toggle("grid", isCustom);
-      if (isCustom) {
-        document.getElementById("customEngineInput").value = customEngineText;
-      }
+    function renderEraAndService() {
+      const modelName = DB[selectedBrand].models[selectedModelIdx].name;
+      const engineName = getActiveEngineLabel();
+      const era = parseEraInfo(modelName);
+      const plan = getServicePlan(engineName);
+
+      document.getElementById("eraServiceSection").innerHTML = `
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="font-bold text-base">Profil ročníka a generácie</h2>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-amber-300 border border-slate-700">${era.badge}</span>
+          </div>
+          <div class="text-xs text-slate-400">${selectedBrand} • ${modelName}</div>
+          <p class="text-sm text-slate-200 leading-relaxed">${era.summary}</p>
+          <p class="text-xs text-slate-300 bg-slate-950/80 border border-slate-800 rounded-xl p-3"><strong class="text-amber-300">Na čo sa zamerať:</strong> ${era.focus}</p>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="font-bold text-base">Servisný plán a prevádzkové kvapaliny</h2>
+            <span class="text-xs text-slate-400">${plan.engineType}</span>
+          </div>
+          <div class="text-sm text-slate-200"><strong>Výmena oleja a filtrov:</strong> ${plan.oilInterval}</div>
+          <div class="text-xs text-slate-300">${plan.timingNote}</div>
+          <ul class="list-disc list-inside space-y-1 text-xs sm:text-sm text-slate-300 pt-1">
+            ${plan.fluids.map(f => `<li>${f}</li>`).join("")}
+          </ul>
+        </div>
+      `;
+    }
+
+    function renderPartButtons() {
+      const container = document.getElementById("partButtons");
+      container.innerHTML = partKeys.map(k => {
+        const active = k === selectedPart;
+        return `<button onclick="selectPart('${k}')" class="px-3 py-2 rounded-xl border text-xs font-medium text-left transition ${
+          active
+            ? "bg-amber-500/20 border-amber-500 text-amber-200"
+            : "bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-800"
+        }">${PARTS[k].label}</button>`;
+      }).join("");
+    }
+
+    function renderVinChecklist() {
+      const modelName = DB[selectedBrand].models[selectedModelIdx].name;
+      const engineName = getActiveEngineLabel();
+      document.getElementById("vinChecklistSection").innerHTML = `
+        <h2 class="font-bold text-base">Pred nákupom dielov a servisom si overte</h2>
+        <div class="text-xs text-slate-400">Aktuálny výber: <span class="text-slate-200 font-medium">${selectedBrand} ${modelName}</span> • <span class="font-mono text-amber-300">${engineName}</span></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+          <div class="rounded-xl bg-slate-950/80 border border-slate-800 p-3.5 space-y-1">
+            <div class="text-xs font-semibold text-amber-300">1. VIN a údaje z techničáku</div>
+            <p class="text-xs text-slate-300">17-miestny VIN kód, presný rok/mesiac výroby, výkon v kW a kód motora odlišujú diely, ktoré vyzerajú podobne, no nesedia.</p>
+          </div>
+          <div class="rounded-xl bg-slate-950/80 border border-slate-800 p-3.5 space-y-1">
+            <div class="text-xs font-semibold text-amber-300">2. OEM katalógy a diely</div>
+            <p class="text-xs text-slate-300">Pri objednávaní bŕzd, spojky, snímačov alebo rozvodov overte originálne číslo (OEM) alebo rozmery (napr. priemer kotúča, typ strmeňa).</p>
+          </div>
+          <div class="rounded-xl bg-slate-950/80 border border-slate-800 p-3.5 space-y-1">
+            <div class="text-xs font-semibold text-amber-300">3. Dielenský manuál a momenty</div>
+            <p class="text-xs text-slate-300">Pre presné uťahovacie momenty, nastavenie rozvodov, elektrické schémy a adaptácie po oprave použite dielenskú dokumentáciu pre daný kód motora.</p>
+          </div>
+        </div>
+      `;
     }
 
     function updateBanner() {
@@ -495,11 +715,15 @@
         <div><span class="text-slate-400">Aktívne vozidlo:</span> <strong class="text-amber-300">${selectedBrand} ${modelName}</strong></div>
         <div class="font-mono text-xs text-slate-300">${engineName}</div>
       `;
+      renderEraAndService();
+      renderPartButtons();
       renderPartCard();
+      renderVinChecklist();
     }
 
     function selectPart(key) {
       selectedPart = key;
+      renderPartButtons();
       renderPartCard();
     }
 
@@ -508,19 +732,46 @@
       const modelName = DB[selectedBrand].models[selectedModelIdx].name;
       const engineName = getActiveEngineLabel();
       document.getElementById("partDetailCard").innerHTML = `
-        <div class="text-xs text-amber-400 font-semibold">${selectedBrand} • ${modelName}</div>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="text-xs text-amber-400 font-semibold">${selectedBrand} • ${modelName}</div>
+          <div class="text-xs font-mono text-slate-400">${engineName}</div>
+        </div>
         <h3 class="text-lg font-bold">${p.title}</h3>
-        <div class="text-xs font-mono text-slate-400">${engineName}</div>
-        <ol class="list-decimal list-inside space-y-2 text-sm text-slate-200 pt-1">
-          ${p.steps.map(s => `<li>${s}</li>`).join("")}
-        </ol>
-        <div class="pt-2">
-          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Súvisiace diely pre uzol</div>
+
+        <div class="space-y-1">
+          <div class="text-xs font-semibold uppercase tracking-wider text-rose-300">Typické poruchy tohto uzla / dielu</div>
+          <ul class="list-disc list-inside space-y-1 text-xs sm:text-sm text-slate-200">
+            ${p.faults.map(f => `<li>${f}</li>`).join("")}
+          </ul>
+        </div>
+
+        <div class="space-y-1">
+          <div class="text-xs font-semibold uppercase tracking-wider text-amber-300">Čo treba opraviť a ako postupovať</div>
+          <ol class="list-decimal list-inside space-y-1.5 text-xs sm:text-sm text-slate-200">
+            ${p.howToFix.map(s => `<li>${s}</li>`).join("")}
+          </ol>
+        </div>
+
+        <div class="rounded-xl bg-slate-950/90 border border-slate-800 p-3 space-y-1">
+          <div class="text-xs font-semibold uppercase tracking-wider text-sky-300">Poistky a relé</div>
+          <ul class="list-disc list-inside space-y-1 text-xs text-slate-300">
+            ${p.fuses.map(fu => `<li>${fu}</li>`).join("")}
+          </ul>
+        </div>
+
+        <div class="rounded-xl bg-slate-950/90 border border-slate-800 p-3 space-y-1">
+          <div class="text-xs font-semibold uppercase tracking-wider text-purple-300">Prehľad schémy zapojenia / okruhu</div>
+          <p class="font-mono text-xs text-slate-200 leading-relaxed">${p.schematic}</p>
+        </div>
+
+        <div class="space-y-1">
+          <div class="text-xs font-semibold uppercase tracking-wider text-emerald-300">Súvisiace diely pre uzol</div>
           <ul class="list-disc list-inside space-y-1 text-xs sm:text-sm text-slate-300">
             ${p.partsList.map(item => `<li>${item}</li>`).join("")}
           </ul>
         </div>
-        <div class="grid grid-cols-2 gap-2.5 pt-2">
+
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
           <div class="rounded-xl bg-emerald-950/50 border border-emerald-700/40 p-3">
             <div class="text-[11px] text-emerald-300">Svojpomocne (diel)</div>
             <div class="font-bold text-sm text-emerald-200">${p.diy}</div>
@@ -533,19 +784,8 @@
       `;
     }
 
-    document.getElementById("applyCustomEngineBtn").addEventListener("click", () => {
-      customEngineText = document.getElementById("customEngineInput").value;
-      updateBanner();
-    });
-
-    document.getElementById("customEngineInput").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        customEngineText = e.target.value;
-        updateBanner();
-      }
-    });
-
     document.getElementById("brandFilter").addEventListener("input", (e) => renderBrands(e.target.value));
+    document.getElementById("engineFilter").addEventListener("input", () => renderEngines());
     renderBrands();
   </script>
 </body>
