@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AutoMech Pro – Poruchy, umiestnenie dielov, poistky a schémy</title>
+  <title>AutoMech Pro – Konkrétne poistky, náhľad dielov a umiestnenie na aute</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -39,11 +39,11 @@
         <div class="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 font-extrabold flex items-center justify-center text-sm">AM</div>
         <div>
           <div class="font-bold text-base leading-tight">AutoMech Pro</div>
-          <div class="text-xs text-slate-400">Umiestnenie dielov • Poistky • Poruchy • Opravy • Schémy</div>
+          <div class="text-xs text-slate-400">Číslovanie poistiek • Náhľad dielov • Kde patria na aute</div>
         </div>
       </div>
       <span class="text-xs px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-medium">
-        Komplet sprievodca
+        Všetky motorizácie
       </span>
     </div>
   </header>
@@ -59,7 +59,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full md:w-auto">
           <input id="brandFilter" type="text" placeholder="Hľadať značku..."
             class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500" />
-          <input id="engineFilter" type="text" placeholder="Hľadať motorizáciu / kód (napr. 1.9 TDI, AXX, 2.0)..."
+          <input id="engineFilter" type="text" placeholder="Hľadať motorizáciu / kód (napr. 2.0 GTI, AXX, 1.9 TDI)..."
             class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500" />
         </div>
       </div>
@@ -80,10 +80,13 @@
       <div id="activeVehicleBanner" class="rounded-xl bg-slate-950/80 border border-slate-800 px-3.5 py-2.5 text-xs sm:text-sm flex flex-wrap items-center justify-between gap-2"></div>
     </section>
 
-    <!-- Krok 2: Profil ročníka, servisný plán a kvapaliny -->
-    <section id="eraServiceSection" class="grid grid-cols-1 lg:grid-cols-2 gap-5"></section>
+    <!-- Krok 2: Konkrétne číslovanie poistiek pre zvolené vozidlo -->
+    <section id="fuseBoxSection" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4"></section>
 
-    <!-- Krok 3: Uzly vozidla, umiestnenie dielov, poruchy, opravy a schémy -->
+    <!-- Krok 3: Kompletný náhľad dielov a kde patria na konkrétnom aute -->
+    <section id="partsOverviewSection" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4"></section>
+
+    <!-- Krok 4: Uzol, poruchy, postup opravy, schéma a ceny -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-5">
       <div class="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
         <div class="flex items-center justify-between">
@@ -151,10 +154,8 @@
       <div id="partDetailCard" class="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4"></div>
     </section>
 
-    <!-- Krok 4: Interaktívna poistková skrinka a umiestnenie poistiek -->
-    <section id="fuseBoxSection" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4"></section>
-
-    <!-- Krok 5: Overenie podľa VIN -->
+    <!-- Krok 5: Servisný plán a overenie podľa VIN -->
+    <section id="eraServiceSection" class="grid grid-cols-1 lg:grid-cols-2 gap-5"></section>
     <section id="vinChecklistSection" class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3"></section>
   </main>
 
@@ -353,30 +354,91 @@
       }
     };
 
+    const SPECIFIC_FUSES = {
+      "Golf V / VI (2003–2012)": {
+        note: "Koncern VW (PQ35 – Golf V/VI, Octavia II, Leon II, A3 8P): hlavné poistky sú na batérii, motorový box (E-box) je vľavo pri batérii a kabínový box na boku palubovky pri vodičovi.",
+        engineBox: [
+          { num: "F1 / SA1", amp: "80–150A", circuit: "Hlavné napájanie / alternátor / rozvodnica", where: "Na plusovom póle / rozvodnici pri batérii v motorovom priestore." },
+          { num: "F8 / SB8", amp: "30–40A", circuit: "Ventilátor chladiča / riadenie chladenia", where: "Motorový poistkový box (E-box) vľavo pri batérii." },
+          { num: "F10 / SB10", amp: "10–15A", circuit: "Riadiaca jednotka motora (ECU) / vstreky / zapaľovanie", where: "Motorový poistkový box (E-box) vľavo pri batérii." },
+          { num: "F16 / SB16", amp: "15–20A", circuit: "Palivové čerpadlo v nádrži / relé paliva", where: "Motorový poistkový box (E-box) vľavo pri batérii." },
+          { num: "F17 / SB17", amp: "25–40A", circuit: "Hydraulika ABS / ESP (čerpadlo)", where: "Motorový poistkový box (E-box) vľavo pri batérii." },
+          { num: "F24 / SB24", amp: "10–15A", circuit: "Lambda sonda / odvetranie / snímače motora", where: "Motorový poistkový box (E-box) vľavo pri batérii." }
+        ],
+        cabinBox: [
+          { num: "SC24 / F24", amp: "15–20A", circuit: "12V zásuvka / zapaľovač", where: "Kabínový box na ľavom boku palubnej dosky za krytom pri dverách vodiča." },
+          { num: "SC15 / F15", amp: "10–15A", circuit: "Rádio / navigácia / infotainment", where: "Kabínový box na ľavom boku palubnej dosky pri vodičovi." },
+          { num: "SC30 / F30", amp: "20–30A", circuit: "Elektrické okná / centrálne zamykanie / BCM", where: "Kabínový box na ľavom boku palubnej dosky pri vodičovi." },
+          { num: "SC23 / F23", amp: "15–30A", circuit: "Stierače predné / ostrekovače", where: "Kabínový box na ľavom boku palubnej dosky pri vodičovi." },
+          { num: "SC10 / F10", amp: "5–10A", circuit: "Prístrojový štít / diagnostika OBD / airbag", where: "Kabínový box na ľavom boku palubnej dosky pri vodičovi." },
+          { num: "SC25 / F25", amp: "15–30A", circuit: "Kúrenie / ventilátor kabíny / klimatizácia", where: "Kabínový box na ľavom boku palubnej dosky pri vodičovi." }
+        ]
+      },
+      "Octavia II (2004–2013)": {
+        note: "Platforma PQ35 (Octavia II): motorový box je vľavo pri batérii, kabínový box je na ľavom boku palubnej dosky pri dverách vodiča.",
+        engineBox: [
+          { num: "SA1", amp: "80–150A", circuit: "Hlavné napájanie / alternátor", where: "Rozvodnica pri batérii v motorovom priestore." },
+          { num: "SB8", amp: "30–40A", circuit: "Ventilátor chladiča", where: "Motorový box vľavo pri batérii." },
+          { num: "SB10", amp: "10–15A", circuit: "ECU motora / zapaľovanie / vstrekovanie", where: "Motorový box vľavo pri batérii." },
+          { num: "SB16", amp: "15–20A", circuit: "Palivové čerpadlo", where: "Motorový box vľavo pri batérii." },
+          { num: "SB17", amp: "25–40A", circuit: "ABS / ESP jednotka", where: "Motorový box vľavo pri batérii." },
+          { num: "SB24", amp: "10–15A", circuit: "Lambda sonda / snímače motora", where: "Motorový box vľavo pri batérii." }
+        ],
+        cabinBox: [
+          { num: "SC24", amp: "15–20A", circuit: "12V zásuvka v kabíne / kufri", where: "Na ľavom boku palubnej dosky pri vodičových dverách." },
+          { num: "SC15", amp: "10–15A", circuit: "Rádio / infotainment", where: "Na ľavom boku palubnej dosky pri vodičových dverách." },
+          { num: "SC30", amp: "20–30A", circuit: "Elektrické okná / centrál", where: "Na ľavom boku palubnej dosky pri vodičových dverách." },
+          { num: "SC23", amp: "15–30A", circuit: "Stierače / ostrekovač", where: "Na ľavom boku palubnej dosky pri vodičových dverách." },
+          { num: "SC10", amp: "5–10A", circuit: "Prístrojový štít / OBD zásuvka", where: "Na ľavom boku palubnej dosky pri vodičových dverách." },
+          { num: "SC25", amp: "15–30A", circuit: "Ventilátor kúrenia / klimatizácia", where: "Na ľavom boku palubnej dosky pri vodičových dverách." }
+        ]
+      }
+    };
+
+    const DEFAULT_FUSES = {
+      note: "Orientačné číslovanie a priradenie okruhov. Presné číslo konkrétnej poistky vždy overte podľa schémy na vnútornej strane krytu poistiek alebo podľa VIN.",
+      engineBox: [
+        { num: "F1", amp: "60–150A", circuit: "Hlavná poistka / alternátor / napájanie rozvodnice", where: "Pri batérii alebo v hlavnom motorovom boxe." },
+        { num: "F2", amp: "30–50A", circuit: "Ventilátor chladiča motora", where: "Poistkový box v motorovom priestore." },
+        { num: "F3", amp: "10–20A", circuit: "Riadiaca jednotka motora (ECU) / zapaľovanie / vstreky", where: "Poistkový box v motorovom priestore." },
+        { num: "F4", amp: "15–20A", circuit: "Palivové čerpadlo", where: "Poistkový box v motorovom priestore." },
+        { num: "F5", amp: "25–40A", circuit: "ABS / ESP čerpadlo a riadenie", where: "Poistkový box v motorovom priestore." },
+        { num: "F6", amp: "10–15A", circuit: "Snímače motora / lambda sonda / EGR", where: "Poistkový box v motorovom priestore." }
+      ],
+      cabinBox: [
+        { num: "F101", amp: "15–20A", circuit: "12V zásuvka / zapaľovač", where: "Bočný kryt palubnej dosky, pod volantom alebo v priehradke." },
+        { num: "F102", amp: "10–15A", circuit: "Rádio / multimédiá / prístrojový štít", where: "Kabínový poistkový box." },
+        { num: "F103", amp: "20–30A", circuit: "Elektrické okná / centrálne zamykanie", where: "Kabínový poistkový box." },
+        { num: "F104", amp: "15–30A", circuit: "Stierače a ostrekovače", where: "Kabínový poistkový box." },
+        { num: "F105", amp: "10–20A", circuit: "Svetlá / smerovky / vnútorné osvetlenie", where: "Kabínový poistkový box." },
+        { num: "F106", amp: "15–30A", circuit: "Ventilátor kúrenia / klimatizácia", where: "Kabínový poistkový box." }
+      ]
+    };
+
     const PARTS = {
       battery: {
         label: "🔋 Batéria & štart",
         title: "12V Batéria, alternátor a štartér",
         locations: [
-          "12V batéria: v motorovom priestore na ľavej/pravej strane pri stene kabíny (niekedy pod krytom alebo v batožinovom priestore / pod sedadlom pri vybraných modeloch).",
-          "Alternátor: vpredu na bloku motora poháňaný drážkovým remeňom (prístup zvrchu alebo zdola po demontáži spodného krytu).",
-          "Štartér: na spoji motora a prevodovky (často v zadnej/dolnej časti motora, niekedy za sáním alebo spodným krytom)."
+          "12V batéria: v motorovom priestore pri stene kabíny (pri pohľade spredu vľavo/vpravo), často pod plastovým krytom.",
+          "Alternátor: v prednej časti motora na drážkovom remeni (prístup zvrchu alebo zdola po zložení spodného krytu).",
+          "Štartér: na spoji motora a prevodovky (často vpredu/zdola pri prevodovke)."
         ],
         faults: [
           "Vybitá alebo sulfatovaná batéria (nedrží napätie, po pár dňoch nenatočí).",
-          "Zlé dobíjanie alternátorom (opotrebované uhlíky, regulátor alebo zaseknutá voľnobežka).",
+          "Zlé dobíjanie alternátorom (opotrebované uhlíky, regulátor alebo voľnobežka).",
           "Zaoxidované svorky, zlá kostra motora/karosérie alebo opotrebovaný štartér (cvakanie / voľnobeh štartéra)."
         ],
         howToFix: [
           "Zmerajte napätie batérie v pokoji (~12,5–12,7 V) a pri naštartovanom motore (~13,8–14,4 V); ak nedobíja, skontrolujte alternátor a budenie.",
-          "Odpojte najprv mínus (-), potom plus (+), očistite svorky a kostrový bod na karosérii/prevodovke, natrite ochranným tukom.",
+          "Odpojte najprv mínus (-), potom plus (+), očistite svorky a kostrový bod na karosérii/prevodovke.",
           "Pri novších autách s BMS / Start-Stop po výmene batérie vykonajte registráciu batérie cez diagnostiku."
         ],
-        schematic: "12V Batéria (+) -> Hlavná poistka / rozvodnica v motore -> Štartér (hlavný prúd + spínacia cievka od spínacej skrinky/štart tlačidla) a Alternátor (B+ do batérie + LIN/DF signál do ECU/BMS) -> Kostra (-) na motor a karosériu.",
+        schematic: "12V Batéria (+) -> Hlavná poistka / rozvodnica v motore -> Štartér (hlavný prúd + spínacia cievka) a Alternátor (B+ do batérie + LIN/DF signál do ECU/BMS) -> Kostra (-).",
         partsList: [
-          "12V autobatéria (AGM / EFB / štandardná podľa výbavy a rozmerov)",
-          "Alternátor, regulátor napätia alebo voľnobežka alternátora",
-          "Štartér, ukostrovací kábel, svorky batérie alebo drážkový remeň"
+          { name: "12V autobatéria (AGM / EFB / štandard)", where: "Pri stene kabíny v motorovom priestore (pod krytom)" },
+          { name: "Alternátor / regulátor / voľnobežka", where: "Vpredu na motore na drážkovom remeni" },
+          { name: "Štartér & ukostrovací kábel", where: "Na spoji motora a prevodovky / karoséria" }
         ],
         diy: "85 – 190 €",
         service: "130 – 280 €"
@@ -385,25 +447,25 @@
         label: "⚙️ Motor & rozvody",
         title: "Motor, rozvody a snímače",
         locations: [
-          "Rozvody (remeň alebo reťaz): na boku motora pod plastovým krytom rozvodov (často na strane drážkového remeňa alebo na strane prevodovky pri vybraných motoroch).",
+          "Rozvody (remeň alebo reťaz): na boku motora pod plastovým krytom rozvodov.",
           "Veko ventilov, sviečky/cievky alebo žhaviče: na vrchu motora pod dekoračným krytom motora.",
-          "Snímač otáčok kľuky (CKP) a vačky (CMP): kľukový pri remenici kľuky / zotrvačníku v spodnej časti bloku, vačkový pri hlave valcov / rozvodoch."
+          "Snímače otáčok kľuky (CKP) a vačky (CMP): kľukový pri remenici/zotrvačníku v spodnej časti motora, vačkový pri hlave valcov."
         ],
         faults: [
-          "Preskočené, opotrebované alebo hlučné rozvody (remeň alebo rozvodová reťaz, napínacie kladky).",
-          "Únik oleja okolo veka ventilov, gufier alebo chladiča oleja; zvýšená spotreba oleja.",
-          "Nepravidelný chod, trhavé zrýchľovanie alebo nenštartovanie kvôli zapaľovaniu, vstrekovaniu alebo snímaču kľuky/vačky."
+          "Opotrebované alebo hlučné rozvody (remeň alebo reťaz, napínacie kladky).",
+          "Únik oleja okolo veka ventilov, gufier alebo chladiča oleja.",
+          "Nepravidelný chod, vynechávanie valcov alebo nenštartovanie kvôli zapaľovaniu, vstrekovaniu alebo snímaču."
         ],
         howToFix: [
-          "Skontrolujte hladinu a kvalitu oleja, odposlechnite motor za studena (kovové hrkotanie reťaze/kladiek) a skontrolujte tesnenia.",
-          "Pri vynechávaní valcov vyčítajte chyby, skontrolujte sviečky/cievky (benzín) alebo žhaviče/vstreky (diesel) a konektory snímačov.",
-          "Pri výmene rozvodov vždy použite aretačné prípravky podľa kódu motora, vymeňte celú sadu + vodnú pumpu a dodržte uťahovacie momenty."
+          "Skontrolujte hladinu a kvalitu oleja, odposlechnite motor za studena a skontrolujte tesnenia.",
+          "Pri vynechávaní valcov vyčítajte chyby, skontrolujte sviečky/cievky alebo žhaviče/vstreky a konektory snímačov.",
+          "Pri rozvodoch vždy použite aretačné prípravky, vymeňte celú sadu + vodnú pumpu a dodržte uťahovacie momenty."
         ],
-        schematic: "Poistka & Hlavné relé ECU -> Riadiaca jednotka motora (ECU) -> Výstupy na Zapaľovacie cievky / Vstrekovače / Palivové čerpadlo & Vstupy zo Snímača kľuky (CKP), Snímača vačky (CMP), MAF/MAP a Lambda sondy.",
+        schematic: "Poistka & Hlavné relé ECU -> Riadiaca jednotka motora (ECU) -> Zapaľovacie cievky / Vstrekovače / Palivové čerpadlo & Snímače CKP / CMP / MAF / MAP / Lambda.",
         partsList: [
-          "Rozvodová sada (remeň alebo reťaz + kladky) + vodná pumpa",
-          "Motorový olej, olejový, vzduchový a palivový filter + tesnenie veka ventilov",
-          "Zapaľovacie sviečky / cievky alebo žhaviče + snímač otáčok kľuky/vačky"
+          { name: "Rozvodová sada + vodná pumpa", where: "Na boku motora pod krytom rozvodov" },
+          { name: "Sviečky / cievky alebo žhaviče", where: "Na vrchu hlavy valcov pod krytom motora" },
+          { name: "Snímač otáčok kľuky / vačky", where: "Spodok bloku motora pri zotrvačníku / hlava motora" }
         ],
         diy: "60 – 360 €",
         service: "180 – 850 €"
@@ -414,23 +476,23 @@
         locations: [
           "Chladič a ventilátor chladiča: úplne vpredu za predným nárazníkom / maskou.",
           "Expanzná nádoba chladiacej kvapaliny: v hornej časti motorového priestoru pri stene kabíny alebo boku.",
-          "Termostat a vodná pumpa: na bloku/hlave motora pri chladiacich hadiciach a rozvodovom/drážkovom pohone; radiátor kúrenia je v stredovej časti pod palubnou doskou."
+          "Termostat a vodná pumpa: na bloku/hlave motora pri chladiacich hadiciach; radiátor kúrenia je pod palubnou doskou."
         ],
         faults: [
           "Zaseknutý termostat (motor sa neohreje na ~90 °C alebo sa prehrieva).",
-          "Únik chladiacej kvapaliny cez prasknutú hadicu, chladič, vodnú pumpu alebo expanznú nádobu.",
-          "Nefunkčný ventilátor chladiča, zavzdušnený okruh alebo zanesený radiátor kúrenia (slabo kúri)."
+          "Únik chladiacej kvapaliny cez hadicu, chladič, vodnú pumpu alebo expanznú nádobu.",
+          "Nefunkčný ventilátor chladiča, zavzdušnený okruh alebo zanesený radiátor kúrenia."
         ],
         howToFix: [
-          "Po vychladnutí skontrolujte hladinu a tesnosť spojov, hadíc a chladiča (stopy bieleho/farebného povlaku po odparení).",
+          "Po vychladnutí skontrolujte hladinu a tesnosť spojov, hadíc a chladiča.",
           "Sledujte ohrev hadíc: pri studenom motore má byť hadica ku chladiču studená, po otvorení termostatu sa zohreje.",
-          "Po oprave doplňte správnu kvapalinu, odvzdušnite okruh podľa modelu a overte spínanie ventilátora."
+          "Po oprave doplňte správnu kvapalinu, odvzdušnite okruh a overte spínanie ventilátora."
         ],
-        schematic: "Snímač teploty chladiacej kvapaliny (ECT) -> ECU / Riadenie chladenia -> Relé / regulátor ventilátora chladiča + Vodné čerpadlo / Termostat -> Malý okruh (motor + radiátor kúrenia) / Veľký okruh (chladič).",
+        schematic: "Snímač teploty (ECT) -> ECU / Riadenie chladenia -> Relé / regulátor ventilátora + Vodná pumpa / Termostat -> Malý okruh (motor + kúrenie) / Veľký okruh (chladič).",
         partsList: [
-          "Termostat (s tesnením alebo kompletné teleso) + chladiaca kvapalina",
-          "Vodná pumpa, expanzná nádoba, viečko nádoby, chladič alebo hadice chladenia",
-          "Snímač teploty chladiacej kvapaliny alebo ventilátor chladiča"
+          { name: "Termostat + chladiaca kvapalina", where: "Na teleso termostatu pri bloku/hlave motora" },
+          { name: "Expanzná nádoba & viečko", where: "Horná časť motorového priestoru pri stene/boku" },
+          { name: "Chladič & ventilátor chladiča", where: "Úplne vpredu za predným nárazníkom" }
         ],
         diy: "35 – 180 €",
         service: "95 – 360 €"
@@ -439,25 +501,25 @@
         label: "🕹️ Spojka & pohon",
         title: "Spojka, prevodovka a poloosy",
         locations: [
-          "Spojka a zotrvačník: vo vnútri zvonu prevodovky medzi motorom a prevodovkou (prístup až po oddelení prevodovky).",
-          "Poloosy a manžety: vedú od prevodovky / diferenciálu do nábojov kolies (ľavá a pravá strana podvozka).",
+          "Spojka a zotrvačník: vo vnútri zvonu prevodovky medzi motorom a prevodovkou.",
+          "Poloosy a manžety: vedú od prevodovky / diferenciálu do nábojov kolies na ľavej a pravej strane.",
           "Ložiská kolies: v náboji každého kolesa v strede brzdového kotúča."
         ],
         faults: [
           "Opotrebovaná lamela, prítlačný tanier alebo dvojhmotový zotrvačník (preklzovanie, trasenie, klepanie).",
-          "Roztrhnutá manžeta poloosi a opotrebovaný homokinetický kĺb (cvakanie/klepanie v zákrute).",
-          "Opotrebované ložisko kolesa (hučanie rastúce s rýchlosťou) alebo nízka hladina / starý prevodový olej."
+          "Roztrhnutá manžeta poloosi a opotrebovaný kĺb (cvakanie/klepanie v zákrute).",
+          "Opotrebované ložisko kolesa (hučanie s rýchlosťou) alebo starý / nízky prevodový olej."
         ],
         howToFix: [
-          "Pri podozrení na spojku vyskúšajte krátky záťah na vyššom prevode; pri trasení pri rozjazde/zhasínaní skontrolujte zotrvačník a silentbloky.",
-          "Zdvihnite vozidlo (na bezpečných podperách), skontrolujte manžety poloosí a vôľu ložísk kolies.",
-          "Pri výmene oleja v prevodovke/DSG/automate vždy najskôr povoľte napúšťací otvor a použite predpísanú kvapalinu."
+          "Pri podozrení na spojku vyskúšajte krátky záťah na vyššom prevode; pri trasení skontrolujte zotrvačník a silentbloky.",
+          "Zdvihnite vozidlo na bezpečných podperách, skontrolujte manžety poloosí a vôľu ložísk kolies.",
+          "Pri výmene oleja v prevodovke/DSG vždy najskôr povoľte napúšťací otvor."
         ],
-        schematic: "Motor -> Spojka / Zotrvačník -> Prevodovka (manuál / automat / DSG) -> Diferenciál & Poloosy -> Predné/Zadné kolesá (pri 4x4 cez rozvodovku/spojku náprav).",
+        schematic: "Motor -> Spojka / Zotrvačník -> Prevodovka -> Diferenciál & Poloosy -> Kolesá.",
         partsList: [
-          "Spojková sada (lamela, prítlačný tanier, ložisko) a prípadne dvojhmotový zotrvačník",
-          "Homokinetický kĺb / poloos a manžety poloosí + spony",
-          "Prevodový olej, ložisko/náboj kolesa alebo silentblok motora/prevodovky"
+          { name: "Spojková sada & zotrvačník", where: "Medzi motorom a prevodovkou vo zvone prevodovky" },
+          { name: "Poloos / homokinetický kĺb / manžeta", where: "Medzi prevodovkou a nábojom kolesa" },
+          { name: "Ložisko / náboj kolesa", where: "V strede náboja kolesa za diskom" }
         ],
         diy: "60 – 450 €",
         service: "180 – 950 €"
@@ -466,25 +528,25 @@
         label: "💨 Výfuk / EGR / DPF",
         title: "Výfuk, EGR ventil a DPF / katalyzátor",
         locations: [
-          "EGR ventil a chladič spalín: pri sacom a výfukovom zbernom potrubí na motore (často vpredu alebo vzadu na bloku motora).",
-          "Katalyzátor / DPF a lambda sondy: na výfukovom potrubí hneď za turbom / zberným potrubím alebo pod podlahou vozidla; snímač diferenčného tlaku býva uchytený na karosérii/držiaku v hornej časti motorového priestoru.",
-          "Pružný dielec (vlnovec) a tlmiče výfuku: pozdĺž stredovej a zadnej časti podvozka pod vozidlom."
+          "EGR ventil a chladič spalín: pri sacom a výfukovom zbernom potrubí na motore.",
+          "Katalyzátor / DPF a lambda sondy: na výfukovom potrubí za turbom / zberným potrubím alebo pod podlahou; snímač diferenčného tlaku je v hornej časti motorového priestoru.",
+          "Pružný dielec (vlnovec) a tlmiče výfuku: pozdĺž podvozka pod vozidlom."
         ],
         faults: [
-          "Zakarbónovaný alebo zaseknutý EGR ventil (trhanie, dymivosť, chybový kód prietoku/polohy EGR).",
-          "Zanesený filter pevných častíc (DPF) alebo chybný snímač diferenčného tlaku / teploty výfukových plynov.",
-          "Prasknutý vlnovec/pružný dielec, netesnosť výfuku, opotrebovaná lambda sonda alebo porucha dávkovania AdBlue."
+          "Zakarbónovaný alebo zaseknutý EGR ventil (trhanie, dymivosť, chybový kód EGR).",
+          "Zanesený DPF filter alebo chybný snímač diferenčného tlaku / teploty výfuku.",
+          "Prasknutý vlnovec, netesnosť výfuku, opotrebovaná lambda sonda alebo chyba AdBlue."
         ],
         howToFix: [
-          "Skontrolujte hadičky a snímač diferenčného tlaku DPF a overte, či nie je prasknutá sacia alebo podtlaková hadica.",
-          "Pri zanesenom EGR vyčistite alebo vymeňte ventil a skontrolujte, či nedochádza ku krátkym jazdám znemožňujúcim regeneráciu DPF.",
-          "Po výmene snímačov alebo DPF/EGR vykonajte adaptáciu / reset hodnôt v riadiacej jednotke."
+          "Skontrolujte hadičky a snímač diferenčného tlaku DPF a overte tesnosť sacích/podtlakových hadíc.",
+          "Pri zanesenom EGR vyčistite alebo vymeňte ventil a skontrolujte podmienky regenerácie DPF.",
+          "Po výmene snímačov alebo DPF/EGR vykonajte adaptáciu / reset v riadiacej jednotke."
         ],
-        schematic: "Valce motora -> Zberné potrubie (odbočka na EGR ventil/chladič) -> Turbo -> Katalyzátor / DPF (snímače teploty & diferenčného tlaku) -> Lambda sondy -> Tlmič výfuku.",
+        schematic: "Valce -> Zberné potrubie (EGR) -> Turbo -> Katalyzátor / DPF (snímače tlaku & teploty) -> Lambda sondy -> Výfukové potrubie a tlmiče.",
         partsList: [
-          "EGR ventil / chladič spalín + tesnenia",
-          "Snímač diferenčného tlaku DPF, lambda sonda alebo snímač teploty výfuku",
-          "Pružný výfukový dielec (vlnovec), gumové závesy výfuku alebo čistič EGR/DPF"
+          { name: "EGR ventil / chladič spalín", where: "Pri sacom a výfukovom potrubí na motore" },
+          { name: "Snímač tlaku DPF / lambda sonda", where: "Na výfuku / horný držiak v motorovom priestore" },
+          { name: "Pružný dielec (vlnovec) / výfuk", where: "Na výfukovom potrubí pod vozidlom" }
         ],
         diy: "45 – 280 €",
         service: "120 – 700 €"
@@ -494,24 +556,24 @@
         title: "Brzdový systém a podvozok",
         locations: [
           "Brzdové kotúče, platničky a strmene: na každom zo 4 kolies za diskom kolesa.",
-          "Hlavný brzdový valec a nádobka brzdovej kvapaliny: na stene kabíny na strane vodiča (za posilňovačom bŕzd).",
-          "Rameno, silentbloky, čap riadenia a tyčky stabilizátora: na prednej/zadnej náprave podvozka (prístup po zdvihnutí a zložení kolesa)."
+          "Nádobka brzdovej kvapaliny a posilňovač: na stene kabíny na strane vodiča.",
+          "Rameno, silentbloky, čap riadenia a tyčky stabilizátora: na prednej/zadnej náprave podvozka."
         ],
         faults: [
-          "Zjazdené brzdové platničky, zvlnené alebo opotrebované kotúče, zadreté vodiace čapy alebo piestik strmeňa.",
-          "Vôle v čapoch riadenia, silentblokoch ramien, tyčkách stabilizátora alebo opotrebované tlmiče/pružiny.",
-          "Zavzdušnená alebo stará brzdová kvapalina (mäkký pedál, dlhšia brzdná dráha)."
+          "Zjazdené platničky, opotrebované/zvlnené kotúče alebo zadreté vodiace čapy/piestik strmeňa.",
+          "Vôle v čapoch riadenia, silentblokoch ramien, tyčkách stabilizátora alebo opotrebované tlmiče.",
+          "Zavzdušnená alebo stará brzdová kvapalina."
         ],
         howToFix: [
-          "Zmerajte hrúbku platničiek a kotúčov, skontrolujte manžety piestikov a rozhýbte/vyčistite vodiace čapy strmeňov.",
-          "Páčidlom skontrolujte vôle v ramenách, čapoch a uložení stabilizátora; pri výmene bŕzd zatlačte piestik (pri zadných s EPB použite servisný režim).",
-          "Po zásahu do riadenia alebo podvozka dajte skontrolovať/nastaviť geometriu náprav."
+          "Zmerajte hrúbku platničiek a kotúčov, skontrolujte manžety a rozhýbte vodiace čapy strmeňov.",
+          "Skontrolujte vôle v ramenách, čapoch a stabilizátore; pri zadných brzdách s EPB použite servisný režim.",
+          "Po zásahu do riadenia alebo podvozka dajte skontrolovať geometriu."
         ],
-        schematic: "Brzdový pedál -> Posilňovač bŕzd -> Hlavný brzdový valec -> Hydraulický blok ABS/ESP -> Brzdové potrubie a hadice -> Brzdové strmene, kotúče a platničky na 4 kolesách.",
+        schematic: "Brzdový pedál -> Posilňovač -> Hlavný valec -> Blok ABS/ESP -> Brzdové trubky/hadice -> Strmene, kotúče a platničky na 4 kolesách.",
         partsList: [
-          "Brzdové kotúče a platničky (predná alebo zadná náprava) + montážna sada",
-          "Predné rameno / silentbloky, čap riadenia, tyčky stabilizátora alebo tlmiče/pružiny",
-          "Brzdová kvapalina DOT 4, vodiace čapy alebo brzdové hadice"
+          { name: "Brzdové kotúče a platničky", where: "Na prednej alebo zadnej náprave za diskom kolesa" },
+          { name: "Rameno / silentbloky / čap riadenia", where: "Na prednej náprave podvozka pri kolese" },
+          { name: "Tyčky stabilizátora / tlmiče", where: "Na prednej alebo zadnej náprave podvozka" }
         ],
         diy: "50 – 240 €",
         service: "120 – 450 €"
@@ -520,55 +582,28 @@
         label: "🔌 Elektrika & snímače",
         title: "Elektrika, poistky, riadenie a snímače",
         locations: [
-          "Motorová poistková skrinka: v motorovom priestore pri batérii alebo torpéde (pod odnímateľným krytom).",
-          "Kabínová poistková skrinka: na ľavom boku palubnej dosky (za krytom pri dverách vodiča), pod volantom alebo v priehradke spolujazdca.",
-          "Snímače ABS/otáčok kolesa a váha vzduchu (MAF): snímače ABS sú pri náboji každého kolesa, váha vzduchu je na sacom potrubí za vzduchovým filtrom."
+          "Motorová poistková skrinka: v motorovom priestore pri batérii alebo stene kabíny pod krytom.",
+          "Kabínová poistková skrinka: na ľavom boku palubnej dosky pri dverách vodiča, pod volantom alebo v priehradke.",
+          "Snímače ABS a váha vzduchu (MAF): ABS pri náboji každého kolesa, MAF na sacom potrubí za vzduchovým filtrom."
         ],
         faults: [
-          "Prepálená poistka alebo chybné relé (nefunguje konkrétny okruh, stierače, okná, ventilátor, zásuvka).",
-          "Chybný snímač alebo poškodený kábel/konektor (ABS/otáčky kolesa, váha vzduchu MAF, tlak/teplota).",
-          "Zvýšený odber prúdu v pokoji (vybíjanie batérie pri odstavení vozidla)."
+          "Prepálená poistka alebo chybné relé (nefunguje konkrétny okruh).",
+          "Chybný snímač alebo poškodený kábel/konektor.",
+          "Zvýšený odber prúdu v pokoji (vybíjanie batérie)."
         ],
         howToFix: [
-          "Nájdite poistkový box v kabíne a v motorovom priestore, vyberte podozrivú poistku a skontrolujte jej prepoj alebo napätie.",
-          "Pred výmenou snímača skontrolujte čistotu konektora a neporušenosť káblového zväzku v priechodkách.",
-          "Pri nočnom vybíjaní batérie zmerajte odber multimetrom v sérii po uspatí áut (~15–30 min) a postupne vyťahujte poistky, kým odber klesne."
+          "Vyberte podozrivú poistku zo správneho boxu a skontrolujte jej prepoj alebo napätie.",
+          "Skontrolujte konektor a kabeláž skôr, než vymeníte snímač.",
+          "Pri nočnom vybíjaní batérie zmerajte odber v pokoji a postupne skúšajte okruhy/poistky."
         ],
-        schematic: "Batéria (+) -> Hlavná poistka -> Poistkový box (Motor / Kabína) -> Relé / Spínač / Riadiaca jednotka (BCM / Gateway / ECU) -> Snímač alebo Akčný člen -> Kostra (-).",
+        schematic: "Batéria (+) -> Hlavná poistka -> Poistkový box (Motor / Kabína) -> Relé / Spínač / Riadiaca jednotka -> Snímač alebo Akčný člen -> Kostra (-).",
         partsList: [
-          "Sada náhradných automobilových poistiek (mini / štandard / maxi) a príslušné relé",
-          "Snímač ABS/otáčok kolesa, váha vzduchu (MAF), snímač tlaku/teploty alebo spínač",
-          "Konektory, izolačná páska / bužírka na kabeláž alebo multimeter"
+          { name: "Náhradné poistky & relé", where: "Motorový a kabínový poistkový box" },
+          { name: "Snímač ABS / otáčok kolesa", where: "Pri náboji každého kolesa na podvozku" },
+          { name: "Váha vzduchu (MAF) / snímače", where: "Sacie potrubie za vzduchovým filtrom / motor" }
         ],
         diy: "20 – 160 €",
         service: "70 – 260 €"
-      }
-    };
-
-    const FUSE_BOXES = {
-      engineBox: {
-        title: "Motorová poistková skrinka (typické pozície)",
-        place: "V motorovom priestore pri batérii alebo pri stene kabíny pod krytom.",
-        slots: [
-          { id: "M1", amp: "40–60A", name: "Ventilátor chladiča", desc: "Napájanie chladiaceho ventilátora / odporu ventilátora (pri prehrievaní alebo nefunkčnom chladení)." },
-          { id: "M2", amp: "30–50A", name: "ABS / ESP hydraulika", desc: "Hlavné napájanie čerpadla ABS/ESP (pri svietiacej kontrolke ABS/ESP)." },
-          { id: "M3", amp: "15–30A", name: "ECU / Vstreky / Palivo", desc: "Riadiaca jednotka motora, vstrekovanie alebo palivové čerpadlo (keď štartér točí, ale motor nechytí)." },
-          { id: "M4", amp: "10–20A", name: "Snímače / Lambda / EGR", desc: "Vyhrievanie lambda sondy, EGR, váha vzduchu alebo snímače motora." },
-          { id: "M5", amp: "30–80A", name: "Žhavenie / Ohrev", desc: "Žhaviace relé/modul pri diesloch alebo prídavný ohrev." },
-          { id: "M6", amp: "15–30A", name: "Ostrekovače / Svetlá", desc: "Vybrané okruhy predných svetiel alebo ostrekovačov podľa výbavy." }
-        ]
-      },
-      cabinBox: {
-        title: "Kabínová poistková skrinka (typické pozície)",
-        place: "Na boku palubnej dosky pri dverách vodiča, pod volantom alebo v priehradke.",
-        slots: [
-          { id: "K1", amp: "15–20A", name: "12V Zásuvka / Zapaľovač", desc: "Napájanie 12V zásuvky v kabíne / kufri (častá prepálená poistka pri kompresore alebo adaptéri)." },
-          { id: "K2", amp: "10–15A", name: "Rádio / Infotainment", desc: "Napájanie autorádia / multimediálneho displeja a palubnej jednotky." },
-          { id: "K3", amp: "20–30A", name: "Elektrické okná / Centrál", desc: "Sťahovanie okien, centrálne zamykanie alebo komfortná jednotka (BCM)." },
-          { id: "K4", amp: "15–30A", name: "Stierače predné / zadné", desc: "Motorček predných alebo zadných stieračov a ostrekovanie." },
-          { id: "K5", amp: "5–15A", name: "Prístrojový štít / Airbag / Diag.", desc: "Budíky, diagnostická zásuvka OBD alebo vybrané moduly v kabíne." },
-          { id: "K6", amp: "10–20A", name: "Kúrenie / Klimatizácia / Ventilátor", desc: "Ovládanie kúrenia, klimatizácie alebo ventilátora kabíny." }
-        ]
       }
     };
 
@@ -578,8 +613,7 @@
     let selectedModelIdx = 0;
     let selectedEngineValue = "";
     let selectedPart = "battery";
-    let activeFuseBoxKey = "engineBox";
-    let activeFuseSlotIdx = 0;
+    let activeFuseTab = "engineBox";
 
     function getFilteredEngines() {
       const allEngines = DB[selectedBrand].models[selectedModelIdx].engines;
@@ -592,6 +626,10 @@
     function getActiveEngineLabel() {
       const list = getFilteredEngines();
       return list.includes(selectedEngineValue) ? selectedEngineValue : list[0];
+    }
+
+    function getFuseDataForModel(modelName) {
+      return SPECIFIC_FUSES[modelName] || DEFAULT_FUSES;
     }
 
     function parseEraInfo(modelName) {
@@ -682,6 +720,95 @@
       updateBanner();
     }
 
+    function renderFuseSection() {
+      const modelName = DB[selectedBrand].models[selectedModelIdx].name;
+      const engineName = getActiveEngineLabel();
+      const fuseData = getFuseDataForModel(modelName);
+      const rows = fuseData[activeFuseTab] || fuseData.engineBox;
+
+      document.getElementById("fuseBoxSection").innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div class="text-xs uppercase tracking-wider text-sky-400 font-semibold">Krok 2 • Číslovanie poistiek a k čomu patria</div>
+            <h2 class="font-bold text-base sm:text-lg">Poistky pre: ${selectedBrand} ${modelName}</h2>
+            <div class="text-xs text-slate-400 font-mono">${engineName}</div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="switchFuseTab('engineBox')" class="px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+              activeFuseTab === "engineBox" ? "bg-sky-500/20 border-sky-400 text-sky-200" : "bg-slate-950 border-slate-700 text-slate-300"
+            }">Motorové poistky</button>
+            <button onclick="switchFuseTab('cabinBox')" class="px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+              activeFuseTab === "cabinBox" ? "bg-sky-500/20 border-sky-400 text-sky-200" : "bg-slate-950 border-slate-700 text-slate-300"
+            }">Kabínové poistky</button>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-300 bg-slate-950/80 border border-slate-800 rounded-xl p-3">${fuseData.note}</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          ${rows.map(r => `
+            <div class="rounded-xl bg-slate-950 border border-slate-800 p-3.5 space-y-1.5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-mono text-xs font-bold px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">${r.num}</span>
+                <span class="font-mono text-xs font-semibold text-sky-300">${r.amp}</span>
+              </div>
+              <div class="text-sm font-bold text-slate-100">${r.circuit}</div>
+              <div class="text-xs text-slate-400"><strong class="text-slate-300">Kde hľadať:</strong> ${r.where}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function switchFuseTab(tab) {
+      activeFuseTab = tab;
+      renderFuseSection();
+    }
+
+    function renderPartsOverview() {
+      const modelName = DB[selectedBrand].models[selectedModelIdx].name;
+      const engineName = getActiveEngineLabel();
+
+      document.getElementById("partsOverviewSection").innerHTML = `
+        <div>
+          <div class="text-xs uppercase tracking-wider text-emerald-400 font-semibold">Krok 3 • Náhľad dielov a kde patria na vozidle</div>
+          <h2 class="font-bold text-base sm:text-lg">Prehľad dielov pre ${selectedBrand} ${modelName}</h2>
+          <div class="text-xs text-slate-400 font-mono">${engineName} • Kliknutím na „Detail uzla“ otvoríte poruchy, postup opravy a schému</div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          ${partKeys.map(key => {
+            const p = PARTS[key];
+            return `
+              <div class="rounded-xl bg-slate-950/90 border border-slate-800 p-3.5 flex flex-col justify-between space-y-3">
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-sm font-bold text-amber-300">${p.label}</span>
+                    <button onclick="jumpToPart('${key}')" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">Detail uzla</button>
+                  </div>
+                  <div class="space-y-1.5">
+                    ${p.partsList.map(item => `
+                      <div class="text-xs border-t border-slate-800/80 pt-1.5">
+                        <div class="font-semibold text-slate-100">${item.name}</div>
+                        <div class="text-slate-400">Kde patrí: <span class="text-slate-300">${item.where}</span></div>
+                      </div>
+                    `).join("")}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    function jumpToPart(key) {
+      selectedPart = key;
+      renderPartButtons();
+      renderPartCard();
+      document.getElementById("partDetailCard").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
     function renderEraAndService() {
       const modelName = DB[selectedBrand].models[selectedModelIdx].name;
       const engineName = getActiveEngineLabel();
@@ -725,68 +852,6 @@
       }).join("");
     }
 
-    function renderFuseBox() {
-      const modelName = DB[selectedBrand].models[selectedModelIdx].name;
-      const engineName = getActiveEngineLabel();
-      const box = FUSE_BOXES[activeFuseBoxKey];
-      const slot = box.slots[activeFuseSlotIdx] || box.slots[0];
-
-      document.getElementById("fuseBoxSection").innerHTML = `
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 class="font-bold text-base">Poistková skrinka a orientačná mapa poistiek</h2>
-            <div class="text-xs text-slate-400">${selectedBrand} ${modelName} • <span class="font-mono text-amber-300">${engineName}</span></div>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="switchFuseBox('engineBox')" class="px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
-              activeFuseBoxKey === "engineBox" ? "bg-amber-500/20 border-amber-500 text-amber-200" : "bg-slate-950 border-slate-700 text-slate-300"
-            }">Motorová skrinka</button>
-            <button onclick="switchFuseBox('cabinBox')" class="px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
-              activeFuseBoxKey === "cabinBox" ? "bg-amber-500/20 border-amber-500 text-amber-200" : "bg-slate-950 border-slate-700 text-slate-300"
-            }">Kabínová skrinka</button>
-          </div>
-        </div>
-
-        <div class="text-xs text-slate-300 bg-slate-950/80 border border-slate-800 rounded-xl px-3.5 py-2.5">
-          <strong class="text-amber-300">Kde skrinku hľadať:</strong> ${box.place}
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
-          ${box.slots.map((s, idx) => {
-            const active = idx === activeFuseSlotIdx;
-            return `<button onclick="selectFuseSlot(${idx})" class="p-3 rounded-xl border text-left transition ${
-              active ? "bg-sky-500/15 border-sky-400 text-sky-100" : "bg-slate-950 border-slate-800 text-slate-200 hover:border-slate-600"
-            }">
-              <div class="flex items-center justify-between text-xs font-mono">
-                <span class="font-bold text-amber-300">${s.id}</span>
-                <span class="text-sky-300">${s.amp}</span>
-              </div>
-              <div class="text-xs font-semibold mt-1 line-clamp-2">${s.name}</div>
-            </button>`;
-          }).join("")}
-        </div>
-
-        <div class="rounded-xl bg-slate-950 border border-slate-800 p-3.5 space-y-1">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="text-sm font-bold text-sky-300">Pozícia ${slot.id} • ${slot.name} (${slot.amp})</div>
-            <div class="text-xs text-slate-400">Presné číslo pozície overte podľa kartičky v kryte poistiek alebo VIN</div>
-          </div>
-          <p class="text-xs sm:text-sm text-slate-200">${slot.desc}</p>
-        </div>
-      `;
-    }
-
-    function switchFuseBox(key) {
-      activeFuseBoxKey = key;
-      activeFuseSlotIdx = 0;
-      renderFuseBox();
-    }
-
-    function selectFuseSlot(idx) {
-      activeFuseSlotIdx = idx;
-      renderFuseBox();
-    }
-
     function renderVinChecklist() {
       const modelName = DB[selectedBrand].models[selectedModelIdx].name;
       const engineName = getActiveEngineLabel();
@@ -800,11 +865,11 @@
           </div>
           <div class="rounded-xl bg-slate-950/80 border border-slate-800 p-3.5 space-y-1">
             <div class="text-xs font-semibold text-amber-300">2. OEM katalógy a diely</div>
-            <p class="text-xs text-slate-300">Pri objednávaní bŕzd, spojky, snímačov alebo rozvodov overte originálne číslo (OEM) alebo rozmery (napr. priemer kotúča, typ strmeňa).</p>
+            <p class="text-xs text-slate-300">Pri objednávaní bŕzd, spojky, snímačov alebo rozvodov overte originálne číslo (OEM) alebo rozmery.</p>
           </div>
           <div class="rounded-xl bg-slate-950/80 border border-slate-800 p-3.5 space-y-1">
             <div class="text-xs font-semibold text-amber-300">3. Dielenský manuál a momenty</div>
-            <p class="text-xs text-slate-300">Pre presné uťahovacie momenty, nastavenie rozvodov, elektrické schémy a adaptácie po oprave použite dielenskú dokumentáciu pre daný kód motora.</p>
+            <p class="text-xs text-slate-300">Pre presné uťahovacie momenty, nastavenie rozvodov, elektrické schémy a adaptácie použite dielenskú dokumentáciu pre daný kód motora.</p>
           </div>
         </div>
       `;
@@ -817,10 +882,11 @@
         <div><span class="text-slate-400">Aktívne vozidlo:</span> <strong class="text-amber-300">${selectedBrand} ${modelName}</strong></div>
         <div class="font-mono text-xs text-slate-300">${engineName}</div>
       `;
+      renderFuseSection();
+      renderPartsOverview();
       renderEraAndService();
       renderPartButtons();
       renderPartCard();
-      renderFuseBox();
       renderVinChecklist();
     }
 
@@ -865,13 +931,6 @@
         <div class="rounded-xl bg-slate-950/90 border border-slate-800 p-3 space-y-1">
           <div class="text-xs font-semibold uppercase tracking-wider text-purple-300">Prehľad schémy zapojenia / okruhu</div>
           <p class="font-mono text-xs text-slate-200 leading-relaxed">${p.schematic}</p>
-        </div>
-
-        <div class="space-y-1">
-          <div class="text-xs font-semibold uppercase tracking-wider text-emerald-300">Súvisiace diely pre uzol</div>
-          <ul class="list-disc list-inside space-y-1 text-xs sm:text-sm text-slate-300">
-            ${p.partsList.map(item => `<li>${item}</li>`).join("")}
-          </ul>
         </div>
 
         <div class="grid grid-cols-2 gap-2.5 pt-1">
