@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="sk" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoMech Pro – Interaktívny sprievodca opravami a dielmi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#151f32',
+                            900: '#0f172a',
+                            950: '#090d16',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Vlastné štýly pre technický automotive vzhľad a animácie */
+        body {
+            background-color: #090d16;
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+
+        /* Jemná technická mriežka v pozadí schémy */
+        .blueprint-grid {
+            background-color: #0b1120;
+            background-image: 
+                linear-gradient(to right, rgba(6, 182, 212, 0.07) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(6, 182, 212, 0.07) 1px, transparent 1px),
+                linear-gradient(to right, rgba(6, 182, 212, 0.14) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(6, 182, 212, 0.14) 1px, transparent 1px);
+            background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+        }
+
+        /* Pulzujúce hotspoty na SVG schéme */
+        @keyframes pulseRing {
+            0% {
+                transform: scale(0.85);
+                opacity: 0.9;
+            }
+            70% {
+                transform: scale(2.1);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(2.1);
+                opacity: 0;
+            }
+        }
+
+        .hotspot-pulse {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: pulseRing 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+        }
+
+        .hotspot-group {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .hotspot-group:hover .hotspot-core {
+            filter: brightness(1.25);
+        }
+
+        /* Skrytie scrollbarov pri zachovaní funkčnosti */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Plynulé prechody akordeónu */
+        .accordion-content {
+            transition: max-height 0.3s ease-out, opacity 0.25s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-amber-500/30 selection:text-amber-200">
+
+    <!-- HORNÁ NAVIGAČNÁ LIŠTA -->
+    <header class="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+            <!-- Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20 border border-amber-400/30">
+                    <svg class="w-6 h-6 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-lg sm:text-xl tracking-tight text-white">AutoMech <span class="text-amber-500">Pro</span></span>
+                        <span class="hidden sm:inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">v2.6 SK/EU</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 hidden sm:block">Interaktívny sprievodca opravami, dielmi a diagnostikou</p>
+                </div>
+            </div>
+
+            <!-- Rýchle vyhľadávanie komponentu alebo problému -->
+            <div class="hidden md:flex flex-1 max-w-md mx-4">
+                <div class="relative w-full">
+                    <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" id="globalPartSearch" placeholder="Hľadať diel, poistku, olej, chybu (napr. EGR, batéria)..." 
+                        class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+                </div>
+            </div>
+
+            <!-- Prepínač FREE / PRO režimu -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button id="proToggleBtn" onclick="toggleProMode()" 
+                    class="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border cursor-pointer bg-slate-900 border-slate-700 text-slate-300 hover:border-amber-500/60">
+                    <span id="proStatusDot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+                    <span id="proStatusLabel">Režim: FREE</span>
+                    <span class="px-1.5 py-0.5 text-[10px] font-mono rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">PRO</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- HLAVNÝ OBSAH -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- 1. SEKČNÝ PANEL: VÝBER ZNAČKY, MODELU A MOTORIZÁCIE -->
+        <section class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-cyan-400 mb-1">
+                        <span>Krok 1</span>
+                        <span>•</span>
+                        <span>Konfigurácia vozidla</span>
+                    </div>
+                    <h1 class="text-lg sm:text-xl font-bold text-white">Vyberte značku, model a motorizáciu vášho auta</h1>
+                </div>
+
+                <!-- Filter značiek -->
+                <div class="relative w-full lg:w-72">
+                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    <input type="text" id="brandFilterInput" placeholder="Filtrovať značku (napr. Škoda, BMW)..." 
+                        class="w-full bg-slate-950 border border-slate-700/80 rounded-xl pl-9 pr-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 transition">
+                </div>
+            </div>
+
+            <!-- Mriežka značiek -->
+            <div id="brandGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2.5 my-4">
+                <!-- Dynamicky generované cez JS -->
+            </div>
+
+            <!-- Výber modelu, generácie/ročníka a motorizácie -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 pt-3 border-t border-slate-800/80 items-end">
+                <div class="md:col-span-4">
+                    <label class="block text-xs font-medium text-slate-400 mb-1.5">Model a generácia vozidla</label>
+                    <select id="modelSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm font-medium text-white focus:outline-none focus:border-cyan-500 transition cursor-pointer">
+                        <!-- Dynamicky generované -->
+                    </select>
+                </div>
+
+                <div class="md:col-span-4">
+                    <label class="block text-xs font-medium text-slate-400 mb-1.5">Motorizácia a kód motora</label>
+                    <select id="engineSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm font-medium text-white focus:outline-none focus:border-cyan-500 transition cursor-pointer">
+                        <!-- Dynamicky generované -->
+                    </select>
+                </div>
+
+                <div class="md:col-span-4">
+                    <div id="activeVehicleBanner" class="bg-slate-950/90 border border-amber-500/30 rounded-xl px-4 py-2.5 flex items-center justify-between">
+                        <div>
+                            <div class="text-[11px] text-slate-400">Aktívna technická dokumentácia:</div>
+                            <div id="activeVehicleTitle" class="text-sm font-bold text-amber-400 truncate">Škoda Octavia III • 2.0 TDI (110 kW)</div>
+                        </div>
+                        <span id="activeFuelBadge" class="text-[11px] font-mono px-2 py-1 rounded-lg bg-slate-800 text-cyan-400 border border-slate-700">DIESEL</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. RÝCHLA DIAGNOSTIKA PODĽA PRÍZNAKOV -->
+        <section class="bg-slate-900/60 border border-slate-800/90 rounded-2xl p-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5">
+                    <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h2 class="text-sm font-bold text-white">Rýchla diagnostika podľa príznaku</h2>
+                        <p class="text-xs text-slate-400">Kliknite na problém a schéma zvýrazní pravdepodobné príčiny</p>
+                    </div>
+                </div>
+
+                <div id="symptomPills" class="flex flex-wrap gap-2">
+                    <!-- Dynamicky generované tlačidlá príznakov -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. HLAVNÝ PRACOVNÝ PRIESTOR: INTERAKTÍVNA SCHÉMA + DETAILNÝ MANUÁL -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- ĽAVÝ / STREDNÝ PANEL: INTERAKTÍVNA SCHÉMA "KDE ČO JE" (7 stĺpcov na desktope) -->
+            <div class="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col">
+                
+                <!-- Prepínač pohľadov vozidla -->
+                <div class="p-3 sm:p-4 bg-slate-950/70 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full sm:w-auto" id="viewTabs">
+                        <button data-view="engine" class="view-tab active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 cursor-pointer bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20">
+                            <span>⚙️</span> Motorový priestor
+                        </button>
+                        <button data-view="chassis" class="view-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 cursor-pointer bg-slate-800/80 text-slate-300 hover:bg-slate-800">
+                            <span>🛞</span> Podvozok a brzdy
+                        </button>
+                        <button data-view="interior" class="view-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 cursor-pointer bg-slate-800/80 text-slate-300 hover:bg-slate-800">
+                            <span>🔌</span> Interiér a poistky
+                        </button>
+                        <button data-view="exterior" class="view-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 cursor-pointer bg-slate-800/80 text-slate-300 hover:bg-slate-800">
+                            <span>💡</span> Exteriér a svetlá
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Interaktívny SVG Blueprint Canvas -->
+                <div class="relative blueprint-grid p-3 sm:p-5 flex flex-col items-center justify-center min-h-[370px] sm:min-h-[430px] select-none">
+                    
+                    <!-- Informačný odznak v rohu schémy -->
+                    <div class="absolute top-3 left-3 z-10 flex items-center gap-2 bg-slate-950/85 backdrop-blur border border-slate-800 px-3 py-1.5 rounded-lg">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                        <span id="schematicViewLabel" class="text-[11px] font-mono text-slate-300">POHĽAD ZHORA • MOTOROVÝ PRIESTOR</span>
+                    </div>
+
+                    <!-- Legenda -->
+                    <div class="absolute top-3 right-3 z-10 hidden sm:flex items-center gap-3 bg-slate-950/85 backdrop-blur border border-slate-800 px-3 py-1.5 rounded-lg text-[11px] text-slate-400">
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block"></span> Diel</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> Vybrané</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Chyba</span>
+                    </div>
+
+                    <!-- SVG Kontajner pre schému -->
+                    <div id="svgSchematicContainer" class="w-full max-w-2xl my-4">
+                        <!-- Dynamicky vykreslené SVG podľa pohľadu a motorizácie -->
+                    </div>
+
+                    <!-- Spodný rýchly zoznam bodov pre daný pohľad (výborné pre mobilné ovládanie) -->
+                    <div class="w-full mt-2 pt-3 border-t border-slate-800/80">
+                        <div class="text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-2">Komponenty v tomto pohľade (kliknite pre detail):</div>
+                        <div id="viewPartsChips" class="flex flex-wrap gap-1.5">
+                            <!-- Dynamicky generované tlačidlá dielov -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PRAVÝ PANEL: DETAILNÝ ROZKLIKÁVACÍ MANUÁL KOMPONENTU (5 stĺpcov na desktope) -->
+            <div id="detailPanel" class="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+                <!-- Dynamicky naplnené detailom zvoleného komponentu -->
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- MODÁLNE OKNO PRE AKTIVÁCIU PRO REŽIMU (BEZ ALERT/CONFIRM) -->
+    <div id="proModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-amber-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeProModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1.5 rounded-lg bg-slate-800/60 cursor-pointer">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-xs font-mono mb-3">
+                ★ AUTOMĚCH PRO • PLÁN DIELŇA
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Odomknite kompletné servisné dáta</h3>
+            <p class="text-sm text-slate-300 mb-4">Získajte prístup k presným uťahovacím momentom (Nm), OEM číslam dielov, schémam poistkových skriniek a servisným intervalom pre všetky značky.</p>
+
+            <ul class="space-y-2.5 text-sm text-slate-300 mb-6 bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+                <li class="flex items-center gap-2.5"><span class="text-emerald-400 font-bold">✓</span> Presné uťahovacie momenty skrutiek v Nm</li>
+                <li class="flex items-center gap-2.5"><span class="text-emerald-400 font-bold">✓</span> OEM kódy dielov a presné objemy náplní</li>
+                <li class="flex items-center gap-2.5"><span class="text-emerald-400 font-bold">✓</span> Rozpis relé a poistiek s hodnotami v Ampéroch</li>
+                <li class="flex items-center gap-2.5"><span class="text-emerald-400 font-bold">✓</span> Kalkulačka úspory: DIY oprava vs. autoservis</li>
+            </ul>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="activateProDemo()" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20 transition cursor-pointer">
+                    Aktivovať PRO ukážku zdarma
+                </button>
+                <button onclick="closeProModal()" class="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-sm transition cursor-pointer">
+                    Zostať vo FREE
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFIKÁCIA (NÁHRADA ZA ALERT) -->
+    <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-900 border border-cyan-500/40 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 max-w-sm">
+            <span id="toastIcon" class="text-cyan-400 text-lg">ℹ️</span>
+            <p id="toastMessage" class="text-xs sm:text-sm font-medium text-slate-200"></p>
+        </div>
+    </div>
+
+    <!-- PÄTIČKA -->
+    <footer class="border-t border-slate-800/80 bg-slate-950/60 py-5 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <div><strong class="text-slate-300">AutoMech Pro</strong> • Technický manuál a diagnostický asistent pre vodičov a domácich mechanikov.</div>
+            <div>Údaje slúžia ako orientačný servisný sprievodca. Pri bezpečnostných prvkoch dodržujte postupy výrobcu.</div>
+        </div>
+    </footer>
+
+    <script>
+        // =========================================================================
+        // 1. DATABÁZA ZNAČIEK, MODELOV A MOTORIZÁCIÍ (SK / EU TRH)
+        // =========================================================================
+        const VEHICLES_DB = [
+            {
+                id: 'skoda',
+                name: 'Škoda',
+                badge: 'ŠK',
+                color: '#10b981',
+                models: [
+                    {
+                        id: 'octavia3',
+                        name: 'Octavia III / IV (2013–2025)',
+                        engines: [
+                            { id: '20tdi', name: '2.0 TDI (110 kW / CRLB)', fuel: 'DIESEL', oilSpec: '0W-30 / 5W-30 VW 507.00', oilCap: '4.7 L', battery: '12V 70Ah AGM (EFB)', filterCode: 'MANN HU 7020 z' },
+                            { id: '15tsi', name: '1.5 TSI ACT (110 kW / DADA)', fuel: 'BENZÍN', oilSpec: '0W-20 VW 508.00', oilCap: '4.3 L', battery: '12V 60Ah EFB', filterCode: 'MANN W 712/95' },
+                            { id: '16tdi', name: '1.6 TDI (85 kW / DDYA)', fuel: 'DIESEL', oilSpec: '0W-30 / 5W-30 VW 507.00', oilCap: '4.6 L', battery: '12V 70Ah AGM', filterCode: 'MANN HU 7020 z' }
+                        ]
+                    },
+                    {
+                        id: 'superb3',
+                        name: 'Superb III (2015–2024)',
+                        engines: [
+                            { id: '20tdi140', name: '2.0 TDI (140 kW / DFHA)', fuel: 'DIESEL', oilSpec: '0W-30 VW 507.00', oilCap: '4.7 L', battery: '12V 70Ah AGM', filterCode: 'MANN HU 7020 z' },
+                            { id: '20tsi', name: '2.0 TSI (140 kW / CZPB)', fuel: 'BENZÍN', oilSpec: '0W-20 VW 508.00', oilCap: '5.7 L', battery: '12V 70Ah AGM', filterCode: 'MANN HU 6013 z' }
+                        ]
+                    },
+                    {
+                        id: 'fabia3',
+                        name: 'Fabia III / IV (2015–2025)',
+                        engines: [
+                            { id: '10tsi', name: '1.0 TSI (70 kW / CHZB)', fuel: 'BENZÍN', oilSpec: '0W-20 / 5W-30 VW 504.00', oilCap: '4.0 L', battery: '12V 60Ah EFB', filterCode: 'MANN W 712/95' },
+                            { id: '10mpi', name: '1.0 MPI (55 kW / CHYB)', fuel: 'BENZÍN', oilSpec: '5W-40 VW 502.00', oilCap: '3.4 L', battery: '12V 52Ah', filterCode: 'MANN W 712/95' }
+                        ]
+                    },
+                    {
+                        id: 'kodiaq',
+                        name: 'Kodiaq (2017–2025)',
+                        engines: [
+                            { id: '20tdi4x4', name: '2.0 TDI 4x4 (110 kW / DTSB)', fuel: 'DIESEL', oilSpec: '0W-30 VW 507.00', oilCap: '5.5 L', battery: '12V 70Ah AGM', filterCode: 'MANN HU 7020 z' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'vw',
+                name: 'Volkswagen',
+                badge: 'VW',
+                color: '#3b82f6',
+                models: [
+                    {
+                        id: 'golf7',
+                        name: 'Golf VII / VIII (2013–2025)',
+                        engines: [
+                            { id: '20tdi', name: '2.0 TDI (110 kW / CRBC)', fuel: 'DIESEL', oilSpec: '5W-30 VW 507.00', oilCap: '4.7 L', battery: '12V 70Ah AGM', filterCode: 'MANN HU 7020 z' },
+                            { id: '14tsi', name: '1.4 / 1.5 TSI (92–110 kW)', fuel: 'BENZÍN', oilSpec: '5W-30 VW 504.00', oilCap: '4.0 L', battery: '12V 60Ah EFB', filterCode: 'MANN W 712/95' }
+                        ]
+                    },
+                    {
+                        id: 'passatb8',
+                        name: 'Passat B8 (2015–2024)',
+                        engines: [
+                            { id: '20tdi', name: '2.0 TDI (110 kW / CRLB)', fuel: 'DIESEL', oilSpec: '0W-30 VW 507.00', oilCap: '4.7 L', battery: '12V 70Ah AGM', filterCode: 'MANN HU 7020 z' },
+                            { id: '20bitdi', name: '2.0 BiTDI (176 kW / CUAA)', fuel: 'DIESEL', oilSpec: '0W-30 VW 507.00', oilCap: '4.7 L', battery: '12V 80Ah AGM', filterCode: 'MANN HU 7020 z' }
+                        ]
+                    },
+                    {
+                        id: 'tiguan',
+                        name: 'Tiguan II (2016–2024)',
+                        engines: [
+                            { id: '20tdi', name: '2.0 TDI 4Motion (110 kW)', fuel: 'DIESEL', oilSpec: '0W-30 VW 507.00', oilCap: '4.7 L', battery: '12V 70Ah AGM', filterCode: 'MANN HU 7020 z' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'audi',
+                name: 'Audi',
+                badge: 'AU',
+                color: '#ef4444',
+                models: [
+                    {
+                        id: 'a4b9',
+                        name: 'A4 B8 / B9 (2012–2024)',
+                        engines: [
+                            { id: '20tdi', name: '2.0 TDI ultra (110–140 kW)', fuel: 'DIESEL', oilSpec: '0W-30 VW 507.00', oilCap: '4.7 L', battery: '12V 80Ah AGM', filterCode: 'MANN HU 7020 z' },
+                            { id: '20tfsi', name: '2.0 TFSI quattro (185 kW)', fuel: 'BENZÍN', oilSpec: '0W-20 VW 508.00', oilCap: '5.2 L', battery: '12V 75Ah AGM', filterCode: 'MANN HU 6013 z' }
+                        ]
+                    },
+                    {
+                        id: 'a6c8',
+                        name: 'A6 C7 / C8 (2014–2024)',
+                        engines: [
+                            { id: '30tdi', name: '3.0 V6 TDI (170–210 kW)', fuel: 'DIESEL', oilSpec: '0W-30 VW 507.00', oilCap: '6.1 L', battery: '12V 95Ah AGM', filterCode: 'MANN HU 7012 z' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'bmw',
+                name: 'BMW',
+                badge: 'BMW',
+                color: '#0ea5e9',
+                models: [
+                    {
+                        id: 'series3',
+                        name: 'Rad 3 F30 / G20 (2012–2025)',
+                        engines: [
+                            { id: '320d', name: '320d (140 kW / B47)', fuel: 'DIESEL', oilSpec: '5W-30 BMW LL-04', oilCap: '5.0 L', battery: '12V 90Ah AGM (v kufri)', filterCode: 'MANN HU 6014/1 z' },
+                            { id: '330i', name: '330i (190 kW / B48)', fuel: 'BENZÍN', oilSpec: '0W-20 BMW LL-17 FE+', oilCap: '5.25 L', battery: '12V 80Ah AGM (v kufri)', filterCode: 'MANN HU 6014/1 z' }
+                        ]
+                    },
+                    {
+                        id: 'series5',
+                        name: 'Rad 5 G30 / G31 (2017–2024)',
+                        engines: [
+                            { id: '530d', name: '530d xDrive (195 kW / B57)', fuel: 'DIESEL', oilSpec: '5W-30 BMW LL-04', oilCap: '6.5 L', battery: '12V 95Ah AGM (v kufri)', filterCode: 'MANN HU 6022 z' }
+                        ]
+                    },
+                    {
+                        id: 'x5',
+                        name: 'X5 F15 / G05 (2014–2025)',
+                        engines: [
+                            { id: 'x30d', name: 'xDrive30d (195–210 kW)', fuel: 'DIESEL', oilSpec: '5W-30 BMW LL-04', oilCap: '6.5 L', battery: '12V 105Ah AGM', filterCode: 'MANN HU 6022 z' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'mercedes',
+                name: 'Mercedes-Benz',
+                badge: 'MB',
+                color: '#94a3b8',
+                models: [
+                    {
+                        id: 'cclass',
+                        name: 'Trieda C W205 / W206 (2014–2025)',
+                        engines: [
+                            { id: 'c220d', name: 'C 220 d (143 kW / OM654)', fuel: 'DIESEL', oilSpec: '5W-30 MB 229.52', oilCap: '6.3 L', battery: '12V 80Ah AGM', filterCode: 'MANN HU 7044 z' },
+                            { id: 'c200', name: 'C 200 EQ Boost (135 kW)', fuel: 'HYBRID', oilSpec: '0W-20 MB 229.71', oilCap: '6.0 L', battery: '12V 70Ah AGM + 48V', filterCode: 'MANN HU 7054 z' }
+                        ]
+                    },
+                    {
+                        id: 'eclass',
+                        name: 'Trieda E W213 (2016–2024)',
+                        engines: [
+                            { id: 'e220d', name: 'E 220 d (143 kW / OM654)', fuel: 'DIESEL', oilSpec: '5W-30 MB 229.52', oilCap: '6.3 L', battery: '12V 80Ah AGM', filterCode: 'MANN HU 7044 z' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'toyota',
+                name: 'Toyota',
+                badge: 'TOY',
+                color: '#dc2626',
+                models: [
+                    {
+                        id: 'corolla',
+                        name: 'Corolla E210 (2019–2025)',
+                        engines: [
+                            { id: '18hybrid', name: '1.8 Hybrid (90–103 kW / 2ZR-FXE)', fuel: 'HYBRID', oilSpec: '0W-16 / 0W-20 API SP', oilCap: '4.2 L', battery: '12V 45Ah (pomocná) + NiMH/Li-Ion', filterCode: 'MANN W 68/3' },
+                            { id: '20hybrid', name: '2.0 Hybrid (135–144 kW / M20A-FXS)', fuel: 'HYBRID', oilSpec: '0W-16 API SN Plus', oilCap: '4.3 L', battery: '12V 52Ah (v kufri)', filterCode: 'MANN W 68/3' }
+                        ]
+                    },
+                    {
+                        id: 'rav4',
+                        name: 'RAV4 XA50 (2019–2025)',
+                        engines: [
+                            { id: '25hybrid', name: '2.5 Hybrid AWD-i (163 kW)', fuel: 'HYBRID', oilSpec: '0W-16 API SP', oilCap: '4.5 L', battery: '12V 60Ah (v kufri)', filterCode: 'MANN W 68/3' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'ford',
+                name: 'Ford',
+                badge: 'FRD',
+                color: '#2563eb',
+                models: [
+                    {
+                        id: 'focus',
+                        name: 'Focus Mk3 / Mk4 (2012–2025)',
+                        engines: [
+                            { id: '15ecoblue', name: '1.5 EcoBlue (88 kW / ZTDA)', fuel: 'DIESEL', oilSpec: '0W-20 Ford WSS-M2C952-A1', oilCap: '6.2 L', battery: '12V 70Ah EFB', filterCode: 'MANN HU 7033 z' },
+                            { id: '10ecoboost', name: '1.0 EcoBoost (92 kW)', fuel: 'BENZÍN', oilSpec: '5W-20 Ford WSS-M2C948-B', oilCap: '4.6 L', battery: '12V 60Ah EFB', filterCode: 'MANN W 7008' }
+                        ]
+                    },
+                    {
+                        id: 'kuga',
+                        name: 'Kuga Mk2 / Mk3 (2013–2025)',
+                        engines: [
+                            { id: '20tdci', name: '2.0 TDCi / EcoBlue (110 kW)', fuel: 'DIESEL', oilSpec: '0W-30 Ford WSS-M2C950-A', oilCap: '6.1 L', battery: '12V 75Ah EFB', filterCode: 'MANN HU 711/51 x' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'hyundai',
+                name: 'Hyundai',
+                badge: 'HYU',
+                color: '#0284c7',
+                models: [
+                    {
+                        id: 'tucson',
+                        name: 'Tucson TL / NX4 (2016–2025)',
+                        engines: [
+                            { id: '16tgdi', name: '1.6 T-GDI (110–132 kW)', fuel: 'BENZÍN', oilSpec: '0W-20 API SP / ACEA C5', oilCap: '4.8 L', battery: '12V 70Ah AGM', filterCode: 'MANN W 811/80' },
+                            { id: '16crdi', name: '1.6 CRDi (100 kW)', fuel: 'DIESEL', oilSpec: '0W-30 / 5W-30 ACEA C2/C3', oilCap: '4.9 L', battery: '12V 80Ah AGM', filterCode: 'MANN HU 7027 z' }
+                        ]
+                    },
+                    {
+                        id: 'i30',
+                        name: 'i30 PD (2017–2025)',
+                        engines: [
+                            { id: '15dpi', name: '1.5 DPi (81 kW / G4LG)', fuel: 'BENZÍN', oilSpec: '0W-20 API SN Plus', oilCap: '3.8 L', battery: '12V 60Ah EFB', filterCode: 'MANN W 811/80' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'kia',
+                name: 'Kia',
+                badge: 'KIA',
+                color: '#e11d48',
+                models: [
+                    {
+                        id: 'ceed',
+                        name: 'Ceed CD (2018–2025)',
+                        engines: [
+                            { id: '15tgdi', name: '1.5 T-GDI (118 kW / G4LH)', fuel: 'BENZÍN', oilSpec: '0W-20 API SP', oilCap: '4.2 L', battery: '12V 60Ah EFB', filterCode: 'MANN W 811/80' },
+                            { id: '16crdi', name: '1.6 CRDi (85–100 kW)', fuel: 'DIESEL', oilSpec: '5W-30 ACEA C3', oilCap: '4.9 L', battery: '12V 70Ah AGM', filterCode: 'MANN HU 7027 z' }
+                        ]
+                    },
+                    {
+                        id: 'sportage',
+                        name: 'Sportage NQ5 (2022–2025)',
+                        engines: [
+                            { id: '16hev', name: '1.6 T-GDI HEV (169 kW)', fuel: 'HYBRID', oilSpec: '0W-20 API SP', oilCap: '4.8 L', battery: '12V integrovaná + Li-Ion', filterCode: 'MANN W 811/80' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'peugeot',
+                name: 'Peugeot',
+                badge: 'PEU',
+                color: '#1d4ed8',
+                models: [
+                    {
+                        id: '308',
+                        name: '308 T9 / P5 (2014–2025)',
+                        engines: [
+                            { id: '15bluehdi', name: '1.5 BlueHDi (96 kW / DV5RC)', fuel: 'DIESEL', oilSpec: '0W-30 / 5W-30 PSA B71 2312', oilCap: '4.0 L', battery: '12V 70Ah EFB', filterCode: 'MANN HU 7033 z' },
+                            { id: '12puretech', name: '1.2 PureTech (96 kW / EB2ADTS)', fuel: 'BENZÍN', oilSpec: '0W-30 PSA B71 2312', oilCap: '3.5 L', battery: '12V 60Ah EFB', filterCode: 'MANN HU 7033 z' }
+                        ]
+                    },
+                    {
+                        id: '3008',
+                        name: '3008 II (2017–2024)',
+                        engines: [
+                            { id: '15bluehdi', name: '1.5 BlueHDi (96 kW)', fuel: 'DIESEL', oilSpec: '0W-30 PSA B71 2312', oilCap: '4.0 L', battery: '12V 70Ah EFB', filterCode: 'MANN HU 7033 z' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'renault',
+                name: 'Renault',
+                badge: 'REN',
+                color: '#eab308',
+                models: [
+                    {
+                        id: 'megane',
+                        name: 'Mégane IV (2016–2024)',
+                        engines: [
+                            { id: '15dci', name: '1.5 Blue dCi (85 kW / K9K)', fuel: 'DIESEL', oilSpec: '5W-30 RN17 / RN0720', oilCap: '4.8 L', battery: '12V 70Ah EFB', filterCode: 'MANN W 79' },
+                            { id: '13tce', name: '1.3 TCe (103 kW / H5H)', fuel: 'BENZÍN', oilSpec: '5W-30 RN17', oilCap: '5.4 L', battery: '12V 60Ah EFB', filterCode: 'MANN HU 10002 z' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'volvo',
+                name: 'Volvo',
+                badge: 'VOL',
+                color: '#38bdf8',
+                models: [
+                    {
+                        id: 'xc60',
+                        name: 'XC60 II (2018–2025)',
+                        engines: [
+                            { id: 'd4b4', name: 'D4 / B4 AWD (140–145 kW)', fuel: 'DIESEL', oilSpec: '0W-20 Volvo VCC RBS0-2AE', oilCap: '5.2 L', battery: '12V 80Ah AGM', filterCode: 'MANN HU 8014 z' }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // =========================================================================
+        // 2. KOMPLETNÁ DATABÁZA KOMPONENTOV PRE VŠETKY 4 POHĽADY VOZIDLA
+        // =========================================================================
+        const COMPONENTS_DB = [
+            // --- POHĽAD 1: MOTOROVÝ PRIESTOR ---
+            {
+                id: 'battery',
+                view: 'engine',
+                name: 'Autobatéria (12V akumulátor)',
+                shortName: 'Autobatéria',
+                x: 135, y: 120,
+                difficulty: 1,
+                time: '15 – 25 min',
+                diyCost: '95 – 145 €',
+                serviceCost: '150 – 220 € (vrátane kódovania)',
+                tools: ['Vidlicový kľúč 10 mm', 'Gola nástavec 13 mm s predĺžením', 'Drôtená kefa na kontakty', 'Diagnostika (pre AGM/EFB kódovanie)'],
+                getLocation: (v) => v.brand.id === 'bmw' || v.engine.battery.includes('v kufri')
+                    ? `Pri modeli ${v.brand.name} ${v.model.name} sa hlavná 12V batéria nachádza v batožinovom priestore pod pravým bočným krytom alebo pod dnom kufra. V motorovom priestore vpravo nájdete štartovacie kontakty (+/-).`
+                    : `V prednej ľavej časti motorového priestoru (pri pohľade spredu vpravo), hneď za ľavým svetlometom a vedľa poistkovej skrinky.`,
+                getSpecs: (v) => [
+                    { label: 'Odporúčaný typ', value: v.engine.battery, pro: false },
+                    { label: 'Napätie v pokoji', value: '12.5 V – 12.8 V (pri chode 14.2 – 14.7 V)', pro: false },
+                    { label: 'Uťahovací moment svoriek', value: '5 Nm (nepreťahovať olovené póly)', pro: true },
+                    { label: 'Kódovanie BMS', value: 'Povinné pri systéme Start-Stop (AGM/EFB)', pro: true }
+                ],
+                symptoms: [
+                    'Pomalé točenie štartéra ráno alebo cvakanie relé bez naštartovania',
+                    'Dočasná deaktivácia systému Start-Stop a hláška „Slabý akumulátor“',
+                    'Pohasínanie palubnej dosky a resetovanie hodín pri štarte'
+                ],
+                steps: [
+                    'Vypnite zapaľovanie, vytiahnite kľúč a počkajte 5 minút, kým sa uspí riadiaca elektronika auta.',
+                    'Odklopte plastový kryt batérie. Kľúčom 10 mm najprv odpojte MÍNUSOVÝ (-) čierny pól a zaistite kábel bokom.',
+                    'Následne odpojte PLUSOVÝ (+) červený pól a uvoľnite spodnú zaisťovaciu pätku batérie (13 mm skrutka).',
+                    'Vyberte starú batériu (pozor, váži 16–22 kg), očistite lôžko a vložte novú batériu.',
+                    'Pripojte najprv PLUSOVÝ (+) pól, potom MÍNUSOVÝ (-). Pri autách so Start-Stop zaregistrujte výmenu cez diagnostiku.'
+                ]
+            },
+            {
+                id: 'oil_filter',
+                view: 'engine',
+                name: 'Olejový filter, náplň a mierka oleja',
+                shortName: 'Olej a filter',
+                x: 315, y: 175,
+                difficulty: 2,
+                time: '35 – 50 min',
+                diyCost: '45 – 75 € (olej + filter)',
+                serviceCost: '110 – 170 €',
+                tools: ['Gola sada 19 mm / Torx T45 (výpustná skrutka)', 'Kľúč na olejový filter 32 mm / 74 mm', 'Zberná nádoba min. 7 L', 'Momentový kľúč'],
+                getLocation: (v) => `Mierka oleja (žlté alebo oranžové očko) je na prednej strane bloku motora ${v.engine.name}. Teleso olejového filtra sa nachádza vpredu dole pri chladiči alebo zvrchu pod plastovým krytom motora.`,
+                getSpecs: (v) => [
+                    { label: 'Špecifikácia oleja', value: v.engine.oilSpec, pro: false },
+                    { label: 'Objem olejovej náplne', value: v.engine.oilCap, pro: false },
+                    { label: 'Kód olejového filtra', value: v.engine.filterCode, pro: true },
+                    { label: 'Uťahovací moment výpustu', value: '30 Nm (vždy dať novú medenú podložku)', pro: true },
+                    { label: 'Uťahovací moment viečka filtra', value: '25 Nm', pro: true }
+                ],
+                symptoms: [
+                    'Prekročený interval 15 000 km alebo 1 rok od poslednej výmeny',
+                    'Tmavý, hustý olej na mierke alebo zápach nespáleného paliva v oleji',
+                    'Hlásenie palubného počítača „Vymeňte motorový olej“'
+                ],
+                steps: [
+                    'Motor zohrejte krátkou jazdou (cca 5 min), aby olej lepšie vytiekol, a auto postavte na rovinu.',
+                    'Otvorte horné nalievacie viečko oleja, aby sa uvoľnil podtlak. Zospodu demontujte kryt pod motorom (Torx T25).',
+                    'Podložte zbernú nádobu, vyskrutkujte výpustnú skrutku olejovej vane a nechajte olej vytiecť (cca 10 min).',
+                    'Vymeňte vložku olejového filtra vrátane nových gumených O-krúžkov (potrite ich kvapkou nového oleja).',
+                    'Naskrutkujte výpustnú skrutku s novým tesnením (30 Nm), nalejte 85 % predpísaného objemu oleja, naštartujte na 30 sekúnd a následne dolejte po hornú rysku mierky.'
+                ]
+            },
+            {
+                id: 'air_filter',
+                view: 'engine',
+                name: 'Vzduchový filter motora (Airbox)',
+                shortName: 'Vzduchový filter',
+                x: 205, y: 105,
+                difficulty: 1,
+                time: '10 – 15 min',
+                diyCost: '14 – 24 €',
+                serviceCost: '35 – 55 €',
+                tools: ['Skrutkovač Torx T20 / T25 alebo krížový PH2', 'Vysávač alebo vlhká handrička'],
+                getLocation: (v) => `Čierny plastový box na pravej alebo ľavej hornej strane motora ${v.engine.name}, z ktorého vedie hrubá sacia hadica smerom k turbu/škrtiacej klapke.`,
+                getSpecs: (v) => [
+                    { label: 'Odporúčaný interval', value: 'Každých 30 000 km alebo 2 roky (v prašnom prostredí 15 000 km)', pro: false },
+                    { label: 'Typ vložky', value: 'Panelový skladaný filter s polyuretánovým tesnením', pro: false },
+                    { label: 'Uťahovací moment veka', value: '3.5 Nm (plastové skrutky)', pro: true }
+                ],
+                symptoms: [
+                    'Zvýšená spotreba paliva o 0,5 – 1,0 l/100 km',
+                    'Slabšia odozva na plynový pedál vo vyšších otáčkach',
+                    'Viditeľne zanesené rebrá filtra prachom, lístím a hmyzom'
+                ],
+                steps: [
+                    'Odskrutkujte obvodové skrutky veka airboxu (zvyčajne 6 až 8 skrutiek Torx T25) alebo uvoľnite kovové klipy.',
+                    'Nadvihnite horné veko (nie je nutné odpájať váhu vzduchu, ak hadica stačí na vyklopenie).',
+                    'Vyberte starú filtračnú vložku a povysávajte nečistoty z dna spodného boxu.',
+                    'Vložte nový filter tak, aby tesnenie presne sadlo po celom obvode, a veko rovnomerne dotiahnite.'
+                ]
+            },
+            {
+                id: 'coolant',
+                view: 'engine',
+                name: 'Chladiaci systém a expanzná nádržka',
+                shortName: 'Chladiaca kvapalina',
+                x: 445, y: 125,
+                difficulty: 1,
+                time: '10 – 30 min',
+                diyCost: '12 – 25 €',
+                serviceCost: '45 – 85 €',
+                tools: ['Ochranné rukavice', 'Refraktometer / hustomer nemrznúcej zmesi', 'Lievik'],
+                getLocation: (v) => `Priehľadná guľatá alebo hranatá nádržka s modrým alebo čiernym viečkom v hornom rohu motorového priestoru (na strane spolujazdca pri čelnom skle).`,
+                getSpecs: (v) => [
+                    { label: 'Typ kvapaliny', value: v.brand.id === 'skoda' || v.brand.id === 'vw' || v.brand.id === 'audi' ? 'G12evo / G13 (ružovo-fialová)' : 'OAT / Silikátová podľa normy výrobcu', pro: false },
+                    { label: 'Bod tuhnutia', value: '-30 °C až -37 °C (pomer 1:1 s destilovanou vodou)', pro: false },
+                    { label: 'Pracovný tlak v systéme', value: '1.4 – 1.6 bar (NEOTVÁRAŤ ZA HORÚCA!)', pro: true }
+                ],
+                symptoms: [
+                    'Červená kontrolka teploty chladiacej kvapaliny alebo hláška „Skontrolujte chladiacu kvapalinu“',
+                    'Auto v zime nekúri alebo teplota motora stúpa nad 90 °C v kolóne',
+                    'Ružový alebo biely zaschnutý povlak okolo vodnej pumpy či prírub'
+                ],
+                steps: [
+                    'UPOZORNENIE: Viečko nádržky otvárajte VÝHRADNE pri studenom motore! Horúca para môže spôsobiť ťažké popáleniny.',
+                    'Skontrolujte hladinu na boku nádržky – pri studenom motore musí byť medzi ryskami MIN a MAX.',
+                    'Ak je hladina nízka, dolejte správny typ nemrznúcej zmesi (nemiešajte rôzne farby/normy).',
+                    'Po doliatí sledujte hladinu najbližších 200 km – ak opäť klesne, dajte natlakovať chladiaci okruh v servise.'
+                ]
+            },
+            {
+                id: 'brake_fluid',
+                view: 'engine',
+                name: 'Nádržka brzdovej kvapaliny a hlavný valec',
+                shortName: 'Brzdová kvapalina',
+                x: 175, y: 78,
+                difficulty: 2,
+                time: '20 – 45 min',
+                diyCost: '10 – 18 €',
+                serviceCost: '40 – 65 €',
+                tools: ['Tester obsahu vody v brzdovej kvapaline', 'Odsávačka alebo odvzušňovacia sada', 'Kľúč 11 mm'],
+                getLocation: (v) => `V zadnej časti motorového priestoru priamo pred vodičom (pri posilňovači bŕzd pod čelným sklom).`,
+                getSpecs: (v) => [
+                    { label: 'Špecifikácia', value: 'DOT 4 LV (nízkoviskózna pre ABS/ESP)', pro: false },
+                    { label: 'Interval výmeny', value: 'Každé 2 roky bez ohľadu na najazdené km', pro: false },
+                    { label: 'Kritický obsah vody', value: 'Nad 3.0 % (riziko varu kvapaliny pri brzdení)', pro: true }
+                ],
+                symptoms: [
+                    '„Mäkký“ alebo špongiovitý brzdový pedál pri opakovanom brzdení z kopca',
+                    'Výstražná kontrolka (!) na prístrojovej doske',
+                    'Tmavohnedé zafarbenie kvapaliny v nádržke (nová je číra až svetložltá)'
+                ],
+                steps: [
+                    'Očistite okolie viečka nádržky, aby do systému nespadli nečistoty.',
+                    'Zmerajte obsah vlhkosti testerom alebo skontrolujte hladinu medzi ryskami MIN a MAX.',
+                    'Pozor: Mierne klesnutie hladiny je prirodzené pri opotrebovaní brzdových platničiek – pred doliatím skontrolujte hrúbku obloženia.',
+                    'Brzdová kvapalina leptá lak karosérie – pri prípadnom kvapnutí ju ihneď opláchnite čistou vodou.'
+                ]
+            },
+            {
+                id: 'turbo_egr',
+                view: 'engine',
+                name: 'Turbodúchadlo / EGR ventil / Sací trakt',
+                shortName: 'Turbo / EGR',
+                x: 345, y: 112,
+                difficulty: 4,
+                time: '2 – 4 hod',
+                diyCost: '85 – 320 €',
+                serviceCost: '250 – 650 €',
+                tools: ['Sada Torx a XZN tisíchranov', 'Čistič EGR / sacieho traktu', 'Diagnostika na základné nastavenie klapky'],
+                getLocation: (v) => v.engine.fuel === 'DIESEL'
+                    ? `Pri naftovom motore ${v.engine.name} je EGR ventil umiestnený na zadnej alebo bočnej strane motora pri výfukovom potrubí, turbodúchadlo je za blokom motora smerom k prepážke kabíny.`
+                    : `Pri benzínovom motore ${v.engine.name} je kompaktné turbodúchadlo integrované na výfukových zvodoch s elektronickou reguláciou obtoku (wastegate).`,
+                getSpecs: (v) => [
+                    { label: 'Plniaci tlak turba', value: v.engine.fuel === 'DIESEL' ? '1.3 – 1.7 bar (relatívny)' : '0.8 – 1.3 bar (relatívny)', pro: true },
+                    { label: 'Typické chybové kódy', value: 'P0401 (nedostatočný prietok EGR), P0299 (nízky plniaci tlak)', pro: true },
+                    { label: 'Prevencia', value: 'Po ostrej jazde nechať motor 30–60 s dochladzovať na voľnobeh', pro: false }
+                ],
+                symptoms: [
+                    'Prepad auta do núdzového režimu (svieti kontrolka motora alebo bliká žhavenie)',
+                    'Strata výkonu pri predbiehaní do kopca, cukanie okolo 1800–2200 ot./min',
+                    'Pískanie alebo húkanie turba, prípadne čierny dym z výfuku'
+                ],
+                steps: [
+                    'Pripojte OBD2 diagnostiku a vyčítajte presné chybové kódy z riadiacej jednotky motora.',
+                    'Skontrolujte tesnosť všetkých tlakových gumových hadíc od turba cez intercooler až po sanie (prasknutá hadica je najčastejšia a najlacnejšia príčina).',
+                    'Skontrolujte voľný chod tiahla regulácie turba a čistotu konektorov.',
+                    'Pri zanesenom EGR ventile demontujte prívodnú rúrku a vyčistite karbónové usadeniny špeciálnym čističom.'
+                ]
+            },
+            {
+                id: 'alternator',
+                view: 'engine',
+                name: 'Alternátor a drážkový klinový remeň',
+                shortName: 'Alternátor',
+                x: 410, y: 195,
+                difficulty: 3,
+                time: '1 – 2 hod',
+                diyCost: '35 – 190 €',
+                serviceCost: '120 – 340 €',
+                tools: ['Kľúč 16 mm alebo 17 mm na napínaciu kladku', 'Aretačný kolík napínača', 'Multimeter'],
+                getLocation: (v) => `Na ľavej strane motora (pri pohľade spredu vľavo) poháňaný drážkovým remeňom z kľukového hriadeľa.`,
+                getSpecs: (v) => [
+                    { label: 'Dobíjacie napätie', value: '13.9 V – 14.8 V pri naštartovanom motore', pro: false },
+                    { label: 'Výkon alternátora', value: '140 A – 180 A (podľa výbavy vozidla)', pro: true },
+                    { label: 'Kontrola remeňa', value: 'Bez priečnych prasklín v drážkach, napínacia kladka bez vibrácií', pro: false }
+                ],
+                symptoms: [
+                    'Červená kontrolka batérie na budíkoch počas jazdy',
+                    'Pískanie remeňa z motorového priestoru po rannom štarte alebo v daždi',
+                    'Postupné vypínanie posilňovača riadenia, ABS a klimatizácie kvôli poklesu napätia'
+                ],
+                steps: [
+                    'Naštartujte motor a multimetrom zmerajte napätie na póloch batérie – ak je pod 13.5 V, alternátor nedobíja.',
+                    'Vizuálne skontrolujte stav drážkového remeňa a voľnobežky alternátora.',
+                    'Pred akoukoľvek demontážou alternátora VŽDY odpojte mínusový pól autobatérie (hrubý kábel na alternátore je pod stálym napätím!).',
+                    'Uvoľnite napínaciu kladku kľúčom, zhoďte remeň a skontrolujte vôle všetkých kladiek rukou.'
+                ]
+            },
+
+            // --- POHĽAD 2: PODVOZOK A BRZDY ---
+            {
+                id: 'front_brakes',
+                view: 'chassis',
+                name: 'Predné brzdové kotúče a platničky',
+                shortName: 'Predné brzdy',
+                x: 155, y: 95,
+                difficulty: 2,
+                time: '60 – 90 min (obe strany)',
+                diyCost: '85 – 140 € (sada kotúčov a platničiek)',
+                serviceCost: '190 – 290 €',
+                tools: ['Kľúč na kolesá 17 mm + zdvihák a podpery', 'Imbus 7 mm alebo kľúč 13/15 mm na strmeň', 'Drôtená kefa a čistič bŕzd', 'Keramická pasta na vedenia'],
+                getLocation: (v) => `Za prednými kolesami – nesú približne 70 % brzdného účinku vozidla.`,
+                getSpecs: (v) => [
+                    { label: 'Minimálna hrúbka platničiek', value: '3.0 mm trecieho materiálu', pro: false },
+                    { label: 'Minimálna hrúbka kotúča', value: 'Zvyčajne 22 mm (nový 25 mm) – vyrazené na hrane kotúča', pro: true },
+                    { label: 'Uťahovací moment kolies', value: '120 Nm (do kríža)', pro: true },
+                    { label: 'Uťahovací moment strmeňa', value: '30 – 35 Nm (vodiace čapy)', pro: true }
+                ],
+                symptoms: [
+                    'Kovové škrípanie alebo pískanie pri brzdení',
+                    'Vibrácie do volantu pri brzdení z vyššej rýchlosti (zvlnené kotúče)',
+                    'Žltá kontrolka opotrebenia brzdového obloženia (O)'
+                ],
+                steps: [
+                    'Povoľte skrutky kolesa na zemi, zdvihnite auto a VŽDY ho podložte pevnou podperou (nikdy nepracujte len na heveri).',
+                    'Odpojte konektor snímača opotrebenia, odskrutkujte vodiace čapy strmeňa a strmeň zaveste na pružinu (nevešať za brzdovú hadičku!).',
+                    'Zatlačte brzdový piestik späť (sledujte hladinu kvapaliny v nádržke, aby nepretiekla).',
+                    'Dôkladne očistite držiak strmeňa drôtenou kefou, namažte klzné plochy tenkou vrstvou keramickej pasty a vložte nové platničky.',
+                    'Po montáži kolesa niekoľkokrát zošliapnite brzdový pedál na mieste, kým nestvrdne, až potom sa pohnite!'
+                ]
+            },
+            {
+                id: 'rear_brakes',
+                view: 'chassis',
+                name: 'Zadné brzdy a elektrická parkovacia brzda (EPB)',
+                shortName: 'Zadné brzdy / EPB',
+                x: 445, y: 95,
+                difficulty: 3,
+                time: '75 – 110 min',
+                diyCost: '70 – 120 €',
+                serviceCost: '170 – 260 €',
+                tools: ['OBD2 diagnostika (servisný režim EPB)', 'Sada na zatláčanie/stáčanie piestikov', 'Kľúč 13 mm a 15 mm'],
+                getLocation: (v) => `Za zadnými kolesami. Pri modeli ${v.brand.name} ${v.model.name} je strmeň vybavený buď elektromotorčekom parkovacej brzdy (EPB), alebo mechanickým tiahlom ručnej brzdy.`,
+                getSpecs: (v) => [
+                    { label: 'Servisný režim EPB', value: 'Povinné otvorenie motorčekov cez diagnostiku pred zatlačením piestu', pro: true },
+                    { label: 'Minimálna hrúbka kotúča', value: '10 mm (nový 12 mm)', pro: true },
+                    { label: 'Uťahovací moment kolies', value: '120 Nm', pro: false }
+                ],
+                symptoms: [
+                    'Hrdzavé ryhy na zadných kotúčoch (typické pri jemnom brzdení a hybridoch)',
+                    'Zahrievanie zadného disku po jazde (zatuhnutý brzdový strmeň)',
+                    'Chybové hlásenie parkovacej brzdy na palubovke'
+                ],
+                steps: [
+                    'Pri autách s elektrickou ručnou brzdou najprv cez diagnostiku aktivujte „Výmenu brzdových platničiek“ (motorčeky stiahnu piest).',
+                    'Pri klasickej ručnej brzde piestik nie je možné len zatlačiť – je potrebné ho súčasne zatláčať a otáčať v smere hodinových ručičiek.',
+                    'Vyčistite vodiace čapy strmeňa a skontrolujte neporušenosť gumených manžiet.',
+                    'Po zložení ukončite servisný režim v diagnostike, aby si brzda nakalibrovala dorazy.'
+                ]
+            },
+            {
+                id: 'suspension',
+                view: 'chassis',
+                name: 'Tlmiče, pružiny a tyčky stabilizátora',
+                shortName: 'Tlmiče a náprava',
+                x: 210, y: 215,
+                difficulty: 3,
+                time: '45 – 120 min',
+                diyCost: '20 – 130 €',
+                serviceCost: '80 – 280 €',
+                tools: ['Kľúč 16 / 18 mm + Imbus/Torx na pridržanie čapu', 'Sťahovák pružín (pri výmene tlmiča)', 'Páčidlo na kontrolu vôlí'],
+                getLocation: (v) => `V podbehoch všetkých štyroch kolies. Tyčka stabilizátora (kosť) spája tlmič s priečnym skrutným stabilizátorom.`,
+                getSpecs: (v) => [
+                    { label: 'Životnosť tlmičov', value: '100 000 – 150 000 km (vždy meniť v páre na náprave)', pro: false },
+                    { label: 'Uťahovací moment tyčky stab.', value: '65 Nm (doťahovať pri zaťaženom kolese)', pro: true },
+                    { label: 'Geometria nápravy', value: 'Odporúčaná po každom zásahu do predných tlmičov alebo ramien', pro: true }
+                ],
+                symptoms: [
+                    'Klepanie alebo búchanie pri prejazde nerovností v nízkej rýchlosti (najčastejšie tyčka stabilizátora)',
+                    'Olejový film stekajúci po tele tlmiča',
+                    'Hojdanie auta po prejdení spomaľovača alebo nerovnomerné opotrebenie pneumatík („zubatý“ dezén)'
+                ],
+                steps: [
+                    'Zdvihnite prednú časť auta, dajte dole koleso a skontrolujte vôľu v kĺboch tyčky stabilizátora.',
+                    'Očistite závity tyčky drôtenou kefou a nastriekajte uvoľňovačom hrdze (WD-40 / Rost Off).',
+                    'Pridržte stred čapu imbusom/Torxom a odskrutkujte matice.',
+                    'Nasaďte novú tyčku stabilizátora a matice dotiahnite predpísaným momentom.'
+                ]
+            },
+            {
+                id: 'fuel_filter',
+                view: 'chassis',
+                name: 'Palivový filter a vedenie paliva',
+                shortName: 'Palivový filter',
+                x: 335, y: 165,
+                difficulty: 2,
+                time: '25 – 40 min',
+                diyCost: '22 – 42 €',
+                serviceCost: '65 – 110 €',
+                tools: ['Torx T20 / T25', 'Rýchlospojkové kliešte alebo plochý skrutkovač', 'OBD2 diagnostika (odvzdušnenie pri dieseli)'],
+                getLocation: (v) => v.engine.fuel === 'DIESEL'
+                    ? `Pri naftovom motore ${v.engine.name} sa palivový filter nachádza v hliníkovom alebo plastovom puzdre v motorovom priestore vľavo alebo pod podlahou pred pravým zadným kolesom.`
+                    : `Pri benzínovom motore ${v.engine.name} je filter väčšinou doživotný integrovaný v palivovom čerpadle v nádrži (pod zadnými sedadlami), prípadne pod podvozkom pri prahu.`,
+                getSpecs: (v) => [
+                    { label: 'Interval výmeny (Diesel)', value: 'Každých 30 000 – 60 000 km (ideálne pred zimou)', pro: false },
+                    { label: 'Odvzdušnenie systému', value: v.engine.fuel === 'DIESEL' ? 'POVINNÉ spustiť podávacie čerpadlo cez diagnostiku pred štartom!' : 'Automatické po zapnutí zapaľovania', pro: true }
+                ],
+                symptoms: [
+                    'Ťažké štartovanie v mrazoch (parafín a voda zamrznutá vo filtri)',
+                    'Vynechávanie motora pri plnom plyne do kopca',
+                    'Zápach nafty alebo benzínu pod autom'
+                ],
+                steps: [
+                    'Pri naftovom motore NIKDY neštartujte „nasucho“ bez odvzdušnenia – vysokotlakové čerpadlo Common-Rail sa môže zadrieť.',
+                    'Otvorte puzdro filtra, vyberte starú vložku a odsajte prípadnú vodu/kal zo dna nádobky.',
+                    'Vložte nový filter s novým tesnením, dotiahnite veko a 3–5× aktivujte palivové čerpadlo cez diagnostiku (alebo zapnutím kľúča).'
+                ]
+            },
+
+            // --- POHĽAD 3: INTERIÉR A POISTKOVÉ SKRINKY ---
+            {
+                id: 'obd2',
+                view: 'interior',
+                name: 'Diagnostická zásuvka OBD2 (16-pin)',
+                shortName: 'OBD2 zásuvka',
+                x: 165, y: 165,
+                difficulty: 1,
+                time: '2 min',
+                diyCost: '15 – 45 € (Bluetooth OBD adaptér)',
+                serviceCost: '30 – 50 € (vyčítanie chýb v servise)',
+                tools: ['OBD2 diagnostický adaptér + aplikácia v mobile'],
+                getLocation: (v) => `Pod prístrojovou doskou na strane vodiča – vľavo pod volantom nad pedálmi (často fialový alebo čierny 16-pinový konektor, niekedy skrytý pod malou odkladacou schránkou).`,
+                getSpecs: (v) => [
+                    { label: 'Štandard konektora', value: 'SAE J1962 16-pin (ISO 15765-4 CAN-BUS)', pro: false },
+                    { label: 'Napájanie na pine 16', value: '12V trvalé napätie (poistka 5A / 7.5A)', pro: true }
+                ],
+                symptoms: [
+                    'Oranžová kontrolka motora (Check Engine) na prístrojovom štíte',
+                    'Kontrolka ABS, ESP, Airbagu alebo tlaku v pneumatikách',
+                    'Potreba resetovať servisný interval po domácej výmene oleja'
+                ],
+                steps: [
+                    'Vypnite zapaľovanie a zasuňte OBD2 adaptér pevne do 16-pinovej zásuvky pod volantom.',
+                    'Zapnite zapaľovanie do polohy II (rozsvietia sa kontrolky, motor nemusí bežať).',
+                    'Spárujte adaptér s aplikáciou v telefóne a vyčítajte uložené chybové kódy (DTC).'
+                ]
+            },
+            {
+                id: 'interior_fuses',
+                view: 'interior',
+                name: 'Interiérová poistková skrinka',
+                shortName: 'Poistky kabíny',
+                x: 135, y: 115,
+                difficulty: 1,
+                time: '5 – 10 min',
+                diyCost: '2 – 6 € (sada nožových poistiek)',
+                serviceCost: '25 – 45 €',
+                tools: ['Plastová pinzeta na poistky (vo veku skrinky)', 'Skúšačka 12V / multimeter'],
+                getLocation: (v) => `Za odkladacou schránkou pred ľavým kolenom vodiča (sklopením dorazov schránky) alebo na ľavom boku palubnej dosky pod krytom viditeľným po otvorení dverí vodiča.`,
+                getSpecs: (v) => [
+                    { label: 'Typ poistiek', value: 'Mini / Micro2 nožové autopostky (5A – 30A)', pro: false },
+                    { label: 'Poistka 12V zásuvky / zapaľovača', value: 'Zvyčajne pozícia F40 / F47 (20A žltá)', pro: true },
+                    { label: 'Poistka stieračov / ostrekovačov', value: '15A modrá alebo 20A žltá', pro: true }
+                ],
+                symptoms: [
+                    'Nefunguje 12V zásuvka / USB nabíjanie v stredovom tuneli',
+                    'Nefunguje rádio, vyhrievanie sedadiel alebo vnútorné osvetlenie',
+                    'Zlyhal motorček ostrekovačov skla'
+                ],
+                steps: [
+                    'Vypnite zapaľovanie a otvorte kryt poistkovej skrinky v kabíne.',
+                    'Podľa schémy na vnútornej strane krytu alebo v manuáli nájdite príslušnú pozíciu.',
+                    'Plastovou pinzetou vytiahnite poistku a proti svetlu skontrolujte, či nie je prepálený vnútorný kovový mostík.',
+                    'Vždy vložte novú poistku PRESNE rovnakej ampérovej hodnoty (farby)!'
+                ]
+            },
+            {
+                id: 'cabin_filter',
+                view: 'interior',
+                name: 'Kabínový (peľový) filter klimatizácie',
+                shortName: 'Kabínový filter',
+                x: 425, y: 120,
+                difficulty: 1,
+                time: '10 – 15 min',
+                diyCost: '12 – 22 € (uhlíkový / antibakteriálny)',
+                serviceCost: '35 – 55 €',
+                tools: ['Žiadne náradie alebo Torx T20 (podľa modelu)'],
+                getLocation: (v) => `Za odkladacou priehradkou pred spolujazdcom. Otvorte priehradku, stlačte bočné plastové dorazy dovnútra a priehradka sa úplne vyklopí nadol.`,
+                getSpecs: (v) => [
+                    { label: 'Odporúčaný typ', value: 'Filter s aktívnym uhlím a polyfenolom (zachytáva pachy aj PM2.5)', pro: false },
+                    { label: 'Smer montáže (AIR FLOW)', value: 'Šípka AIR FLOW musí smerovať NADOL k ventilátoru!', pro: true },
+                    { label: 'Interval výmeny', value: 'Každých 15 000 km alebo 1× ročne na jar', pro: false }
+                ],
+                symptoms: [
+                    'Intenzívne zahmlievanie čelného skla za dažďa',
+                    'Zatuchnutý zápach po zapnutí ventilácie alebo klimatizácie',
+                    'Slabý prúd vzduchu z výduchov aj pri ventilátore na maximum'
+                ],
+                steps: [
+                    'Vyprázdnite odkladaciu schránku pred spolujazdcom a uvoľnite jej bočné zarážky.',
+                    'Odklopte západky na kryte telesa ventilátora a vysuňte starý peľový filter.',
+                    'Vložte nový filter so šípkou AIR FLOW smerujúcou nadol a zacvaknite kryt.'
+                ]
+            },
+
+            // --- POHĽAD 4: EXTERIÉR A OSVETLENIE ---
+            {
+                id: 'headlights',
+                view: 'exterior',
+                name: 'Predné svetlomety, žiarovky a denné svietenie',
+                shortName: 'Predné svetlá',
+                x: 115, y: 110,
+                difficulty: 1,
+                time: '10 – 25 min',
+                diyCost: '8 – 35 € (žiarovky H7 / D3S)',
+                serviceCost: '25 – 75 €',
+                tools: ['Ochranné rukavice (nedotýkať sa skla halogénovej žiarovky!)', 'Torx T25 (pri niektorých modeloch)'],
+                getLocation: (v) => `V predných rohoch karosérie. Prístup k zadným gumeným krytkám svetlometov je z motorového priestoru (pri niektorých autách cez servisný otvor v podbehu kolesa).`,
+                getSpecs: (v) => [
+                    { label: 'Najčastejší typ žiarovky', value: 'H7 (stretávacie) / H15 alebo H7 (diaľkové) / Full LED jednotka', pro: false },
+                    { label: 'Sklon svetlometov', value: '1.0 % – 1.2 % nadol (nastaviteľné skrutkou na telese svetla)', pro: true }
+                ],
+                symptoms: [
+                    'Hlásenie „Skontrolujte pravé/ľavé stretávacie svetlo“ na prístrojovke',
+                    'Ružovkasté zafarbenie xenónovej výbojky pred vyhorením',
+                    'Zarosenie vnútorného plexiskla (skontrolujte nasadenie zadnej gumennej krytky)'
+                ],
+                steps: [
+                    'Vypnite svetlá a nechajte žiarovku aspoň 5 minút vychladnúť.',
+                    'Otvorte kapotu, zložte okrúhlu gumenú prachovku zo zadnej strany svetlometu.',
+                    'Odpojte konektor, uvoľnite drôtenú poistku a vyberte starú žiarovku.',
+                    'Novú žiarovku držte LEN za kovovú päticu (mastnota z prstov spôsobí prehriatie a prasknutie banky).'
+                ]
+            },
+            {
+                id: 'wipers',
+                view: 'exterior',
+                name: 'Stierače a servisná poloha ramienok',
+                shortName: 'Stierače',
+                x: 245, y: 115,
+                difficulty: 1,
+                time: '5 min',
+                diyCost: '18 – 28 € (pár bezramienkových stieračov)',
+                serviceCost: '35 – 50 €',
+                tools: ['Žiadne náradie (bajonetový / Push-Button adaptér)', 'Mäkká handra na podloženie ramienka'],
+                getLocation: (v) => `Na spodnej hrane čelného skla. Pri moderných autách sú ramená zasunuté pod hranou kapoty – pred odklopením ich musíte dať do servisnej polohy!`,
+                getSpecs: (v) => [
+                    { label: 'Rozmery stieračov', value: 'Zvyčajne 650 mm (vodič) + 450/475 mm (spolujazdec)', pro: false },
+                    { label: 'Aktivácia servisnej polohy', value: 'Zapnúť a vypnúť zapaľovanie → do 10 s stlačiť páčku stieračov NADOL', pro: true }
+                ],
+                symptoms: [
+                    'Šmuhy a vodný film priamo v zornom poli vodiča',
+                    'Poskakovanie a vŕzganie gumičky po skle',
+                    'Rozstrapkaná alebo natrhnutá grafitová hrana lišty'
+                ],
+                steps: [
+                    'Aktivujte servisnú polohu stieračov, aby ramená vyšli zvislo na čelné sklo (inak odriete hranu kapoty).',
+                    'Odklopte rameno a na sklo položte zložený uterák pre prípad, že by rameno bez lišty spadlo späť.',
+                    'Stlačte poistné tlačidlo na adaptéri, vysuňte starú lištu a zacvaknite novú.'
+                ]
+            },
+            {
+                id: 'rear_lights',
+                view: 'exterior',
+                name: 'Zadné združené svetlá a brzdové svetlo',
+                shortName: 'Zadné svetlá',
+                x: 505, y: 115,
+                difficulty: 1,
+                time: '10 – 15 min',
+                diyCost: '3 – 12 €',
+                serviceCost: '20 – 40 €',
+                tools: ['Plochý skrutkovač obalený handričkou', 'Krídlová matica / Torx T20 zvnútra kufra'],
+                getLocation: (v) => `V zadných blatníkoch a piatych dverách. Demontáž sa vykonáva po otvorení kufra cez bočný servisný otvor v čalúnení.`,
+                getSpecs: (v) => [
+                    { label: 'Typické žiarovky', value: 'P21W (brzdové/smerové), W5W (obrysové), W16W (cúvacie)', pro: false },
+                    { label: 'Kontrola ukostrenia', value: 'Oxidácia konektora spôsobuje „diskotéku“ svetiel pri brzdení', pro: true }
+                ],
+                symptoms: [
+                    'Rýchlejšie blikanie smerovky na palubnej doske',
+                    'Upozornenie na vypálenú žiarovku brzdového alebo cúvacieho svetla'
+                ],
+                steps: [
+                    'Otvorte batožinový priestor a vyberte plastovú krytku na boku čalúnenia za svetlom.',
+                    'Odskrutkujte plastovú krídlovú maticu držiacu teleso svetlometu a svetlo opatrne vysuňte smerom dozadu.',
+                    'Vycvaknite nosič žiaroviek, vymeňte chybnú žiarovku a pred spätnou montážou otestujte všetky funkcie.'
+                ]
+            }
+        ];
+
+        // =========================================================================
+        // 3. RÝCHLA DIAGNOSTIKA PODĽA PRÍZNAKOV
+        // =========================================================================
+        const SYMPTOMS_DB = [
+            {
+                id: 'no_start',
+                label: '🔋 Auto neštartuje',
+                view: 'engine',
+                highlightIds: ['battery', 'alternator', 'fuel_filter'],
+                tip: 'Najčastejšou príčinou je vybitá autobatéria (pod 12.0 V), zaoxidované svorky alebo porucha dobíjania alternátorom.'
+            },
+            {
+                id: 'check_engine',
+                label: '⚠️ Kontrolka motora',
+                view: 'engine',
+                highlightIds: ['turbo_egr', 'air_filter'],
+                tip: 'Pripojte OBD2 diagnostiku. Najčastejšie ide o zanesený EGR ventil, netesnosť sania/turba alebo snímač tlaku.'
+            },
+            {
+                id: 'squeaky_brakes',
+                label: '🛑 Pískajú brzdy',
+                view: 'chassis',
+                highlightIds: ['front_brakes', 'rear_brakes'],
+                tip: 'Skontrolujte hrúbku brzdových platničiek (min. 3 mm) a stav vodiacich čapov strmeňa.'
+            },
+            {
+                id: 'overheating',
+                label: '🌡️ Prehrieva sa motor',
+                view: 'engine',
+                highlightIds: ['coolant'],
+                tip: 'Po vychladnutí motora skontrolujte hladinu v expanznej nádržke. Nikdy ju neotvárajte za horúca!'
+            },
+            {
+                id: 'electronics_dead',
+                label: '🔌 Nejde zásuvka / svetlo',
+                view: 'interior',
+                highlightIds: ['interior_fuses', 'headlights'],
+                tip: 'Skontrolujte prepálenú nožovú poistku v interiérovej poistkovej skrinke na strane vodiča.'
+            }
+        ];
+
+        // =========================================================================
+        // 4. STAV APLIKÁCIE (STATE)
+        // =========================================================================
+        let state = {
+            selectedBrandId: 'skoda',
+            selectedModelId: 'octavia3',
+            selectedEngineId: '20tdi',
+            brandFilter: '',
+            activeView: 'engine',
+            selectedComponentId: 'battery',
+            activeSymptomId: null,
+            isPro: false
+        };
+
+        // =========================================================================
+        // 5. POMOCNÉ FUNKCIE PRE ZÍSKANIE AKTUÁLNEHO VOZIDLA
+        // =========================================================================
+        function getCurrentVehicle() {
+            const brand = VEHICLES_DB.find(b => b.id === state.selectedBrandId) || VEHICLES_DB[0];
+            const model = brand.models.find(m => m.id === state.selectedModelId) || brand.models[0];
+            const engine = model.engines.find(e => e.id === state.selectedEngineId) || model.engines[0];
+            return { brand, model, engine };
+        }
+
+        function showToast(message, icon = 'ℹ️') {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastMessage').textContent = message;
+            document.getElementById('toastIcon').textContent = icon;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3400);
+        }
+
+        // =========================================================================
+        // 6. VYKRESLENIE ZNAČIEK, MODELOV A MOTORIZÁCIÍ
+        // =========================================================================
+        function renderBrands() {
+            const grid = document.getElementById('brandGrid');
+            const filter = state.brandFilter.trim().toLowerCase();
+            const filteredBrands = VEHICLES_DB.filter(b => b.name.toLowerCase().includes(filter));
+
+            if (filteredBrands.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-4 text-sm text-slate-400">Nenašla sa žiadna značka pre „${state.brandFilter}“.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filteredBrands.map(brand => {
+                const isSelected = brand.id === state.selectedBrandId;
+                return `
+                    <button onclick="selectBrand('${brand.id}')" 
+                        class="group flex flex-col items-center justify-center p-2.5 rounded-xl border transition cursor-pointer ${
+                            isSelected 
+                                ? 'bg-amber-500/15 border-amber-500 text-white shadow-lg shadow-amber-500/10' 
+                                : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200'
+                        }">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center font-mono font-bold text-xs mb-1.5 transition ${
+                            isSelected ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300 group-hover:bg-slate-700'
+                        }">
+                            ${brand.badge}
+                        </div>
+                        <span class="text-xs font-semibold truncate max-w-full">${brand.name}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderSelectors() {
+            const { brand, model, engine } = getCurrentVehicle();
+            const modelSelect = document.getElementById('modelSelect');
+            const engineSelect = document.getElementById('engineSelect');
+
+            modelSelect.innerHTML = brand.models.map(m => 
+                `<option value="${m.id}" ${m.id === model.id ? 'selected' : ''}>${m.name}</option>`
+            ).join('');
+
+            engineSelect.innerHTML = model.engines.map(e => 
+                `<option value="${e.id}" ${e.id === engine.id ? 'selected' : ''}>${e.name}</option>`
+            ).join('');
+
+            document.getElementById('activeVehicleTitle').textContent = `${brand.name} ${model.name.split('(')[0].trim()} • ${engine.name}`;
+            const fuelBadge = document.getElementById('activeFuelBadge');
+            fuelBadge.textContent = engine.fuel;
+            fuelBadge.className = `text-[11px] font-mono px-2.5 py-1 rounded-lg border ${
+                engine.fuel === 'DIESEL' ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' :
+                engine.fuel === 'HYBRID' ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' :
+                'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
+            }`;
+        }
+
+        function selectBrand(brandId) {
+            state.selectedBrandId = brandId;
+            const brand = VEHICLES_DB.find(b => b.id === brandId);
+            state.selectedModelId = brand.models[0].id;
+            state.selectedEngineId = brand.models[0].engines[0].id;
+            renderBrands();
+            renderSelectors();
+            renderSchematic();
+            renderDetailPanel();
+        }
+
+        // =========================================================================
+        // 7. VYKRESLENIE RÝCHLEJ DIAGNOSTIKY (PRÍZNAKY)
+        // =========================================================================
+        function renderSymptoms() {
+            const container = document.getElementById('symptomPills');
+            container.innerHTML = SYMPTOMS_DB.map(sym => {
+                const isActive = state.activeSymptomId === sym.id;
+                return `
+                    <button onclick="toggleSymptom('${sym.id}')" 
+                        class="px-3 py-1.5 rounded-xl text-xs font-medium border transition cursor-pointer ${
+                            isActive 
+                                ? 'bg-rose-500/20 border-rose-500 text-rose-200 shadow-md shadow-rose-500/10' 
+                                : 'bg-slate-950/80 border-slate-800 text-slate-300 hover:border-slate-600'
+                        }">
+                        ${sym.label}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function toggleSymptom(symptomId) {
+            if (state.activeSymptomId === symptomId) {
+                state.activeSymptomId = null;
+                renderSymptoms();
+                renderSchematic();
+                return;
+            }
+            const symptom = SYMPTOMS_DB.find(s => s.id === symptomId);
+            state.activeSymptomId = symptomId;
+            state.activeView = symptom.view;
+            state.selectedComponentId = symptom.highlightIds[0];
+
+            updateViewTabsUI();
+            renderSymptoms();
+            renderSchematic();
+            renderDetailPanel();
+            showToast(symptom.tip, '🩺');
+        }
+
+        // =========================================================================
+        // 8. INTERAKTÍVNA SVG SCHÉMA VOZIDLA ("KDE ČO JE")
+        // =========================================================================
+        function updateViewTabsUI() {
+            document.querySelectorAll('.view-tab').forEach(btn => {
+                const isTabActive = btn.dataset.view === state.activeView;
+                if (isTabActive) {
+                    btn.className = 'view-tab active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 cursor-pointer bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20';
+                } else {
+                    btn.className = 'view-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-2 cursor-pointer bg-slate-800/80 text-slate-300 hover:bg-slate-800';
+                }
+            });
+
+            const labels = {
+                engine: 'POHĽAD ZHORA • MOTOROVÝ PRIESTOR',
+                chassis: 'BOČNÝ TECHNICKÝ REZ • PODVOZOK A BRZDY',
+                interior: 'PÔDORYS KABÍNY • INTERIÉR A POISTKY',
+                exterior: 'POHĽAD ZHORA • EXTERIÉR A OSVETLENIE'
+            };
+            document.getElementById('schematicViewLabel').textContent = labels[state.activeView];
+        }
+
+        function getBaseBlueprintSVG(view, engineFuel) {
+            if (view === 'engine') {
+                return `
+                    <!-- Obrys prednej kapoty a blatníkov -->
+                    <path d="M 65 245 L 65 95 Q 65 48 130 42 L 470 42 Q 535 48 535 95 L 535 245" fill="rgba(15,23,42,0.75)" stroke="#334155" stroke-width="2.5"/>
+                    <!-- Predná maska a chladič -->
+                    <rect x="175" y="48" width="250" height="16" rx="4" fill="#1e293b" stroke="#06b6d4" stroke-opacity="0.45" stroke-width="1.5"/>
+                    <text x="300" y="59" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">CHLADIČOVÁ STENA / INTERCOOLER</text>
+                    <!-- Svetlomety vľavo a vpravo -->
+                    <path d="M 76 72 L 155 64 L 145 92 L 76 96 Z" fill="rgba(6,182,212,0.12)" stroke="#06b6d4" stroke-opacity="0.5"/>
+                    <path d="M 524 72 L 445 64 L 455 92 L 524 96 Z" fill="rgba(6,182,212,0.12)" stroke="#06b6d4" stroke-opacity="0.5"/>
+                    <!-- Blok motora v strede -->
+                    <rect x="225" y="95" width="165" height="125" rx="14" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+                    <rect x="242" y="112" width="130" height="90" rx="8" fill="#0f172a" stroke="#64748b" stroke-dasharray="4 3"/>
+                    <text x="307" y="152" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="bold" font-family="monospace">BLOK MOTORA</text>
+                    <text x="307" y="167" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">${engineFuel}</text>
+                    <!-- Prevodovka vpravo od motora -->
+                    <rect x="394" y="118" width="68" height="82" rx="10" fill="#151f32" stroke="#475569" stroke-width="1.5"/>
+                    <text x="428" y="162" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">PREVOD.</text>
+                    <!-- Autobatéria obrys -->
+                    <rect x="102" y="102" width="66" height="44" rx="6" fill="#151f32" stroke="#475569"/>
+                    <!-- Expanzná nádržka obrys -->
+                    <circle cx="445" cy="125" r="22" fill="#151f32" stroke="#475569"/>
+                    <!-- Prepážka kabíny -->
+                    <path d="M 75 232 Q 300 218 525 232" fill="none" stroke="#475569" stroke-width="2"/>
+                    <text x="300" y="246" text-anchor="middle" fill="#475569" font-size="9" font-family="monospace">ČELNÉ SKLO / PREPÁŽKA KABÍNY</text>
+                `;
+            }
+            if (view === 'chassis') {
+                return `
+                    <!-- Bočná silueta podvozku a karosérie -->
+                    <path d="M 70 175 L 85 130 L 175 118 L 245 72 L 420 72 L 495 118 L 530 135 L 530 175 Z" fill="rgba(15,23,42,0.65)" stroke="#334155" stroke-width="2"/>
+                    <!-- Podlahová plošina a výfuk -->
+                    <line x1="155" y1="178" x2="445" y2="178" stroke="#06b6d4" stroke-opacity="0.5" stroke-width="3"/>
+                    <line x1="215" y1="186" x2="515" y2="186" stroke="#64748b" stroke-width="2" stroke-dasharray="6 3"/>
+                    <!-- Predné koleso a brzdový kotúč -->
+                    <circle cx="155" cy="175" r="46" fill="#090d16" stroke="#475569" stroke-width="3"/>
+                    <circle cx="155" cy="175" r="26" fill="#1e293b" stroke="#06b6d4" stroke-opacity="0.6" stroke-width="2"/>
+                    <!-- Zadné koleso a brzdový kotúč -->
+                    <circle cx="445" cy="175" r="46" fill="#090d16" stroke="#475569" stroke-width="3"/>
+                    <circle cx="445" cy="175" r="24" fill="#1e293b" stroke="#06b6d4" stroke-opacity="0.6" stroke-width="2"/>
+                    <!-- Vzpera tlmiča -->
+                    <line x1="155" y1="175" x2="178" y2="108" stroke="#f59e0b" stroke-opacity="0.5" stroke-width="4"/>
+                    <line x1="445" y1="175" x2="432" y2="115" stroke="#f59e0b" stroke-opacity="0.5" stroke-width="4"/>
+                    <text x="300" y="242" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">PODVOZOK • BRZDOVÝ SYSTÉM • PALIVOVÉ VEDENIE</text>
+                `;
+            }
+            if (view === 'interior') {
+                return `
+                    <!-- Pôdorys interiéru auta (pohľad zhora) -->
+                    <rect x="85" y="45" width="430" height="175" rx="34" fill="rgba(15,23,42,0.75)" stroke="#334155" stroke-width="2.5"/>
+                    <!-- Palubná doska -->
+                    <path d="M 110 75 Q 300 62 490 75 L 480 112 Q 300 100 120 112 Z" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+                    <!-- Volant (vľavo) -->
+                    <circle cx="175" cy="108" r="22" fill="none" stroke="#06b6d4" stroke-opacity="0.7" stroke-width="3"/>
+                    <text x="175" y="143" text-anchor="middle" fill="#64748b" font-size="8" font-family="monospace">VODIČ</text>
+                    <!-- Sedadlá -->
+                    <rect x="145" y="152" width="62" height="50" rx="8" fill="#151f32" stroke="#334155"/>
+                    <rect x="392" y="152" width="62" height="50" rx="8" fill="#151f32" stroke="#334155"/>
+                    <text x="300" y="242" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">KABÍNA • DIAGNOSTICKÝ PORT OBD2 • ELEKTRONIKA</text>
+                `;
+            }
+            // exterior
+            return `
+                <!-- Pôdorys karosérie vozidla zhora -->
+                <path d="M 75 130 Q 75 65 150 58 L 450 58 Q 525 65 525 130 Q 525 195 450 202 L 150 202 Q 75 195 75 130 Z" fill="rgba(15,23,42,0.8)" stroke="#334155" stroke-width="2.5"/>
+                <!-- Čelné sklo -->
+                <path d="M 215 68 L 265 78 L 265 182 L 215 192 Z" fill="rgba(6,182,212,0.12)" stroke="#06b6d4" stroke-opacity="0.45"/>
+                <!-- Zadné sklo -->
+                <path d="M 445 74 L 405 82 L 405 178 L 445 186 Z" fill="rgba(6,182,212,0.12)" stroke="#06b6d4" stroke-opacity="0.45"/>
+                <!-- Predné svetlá -->
+                <rect x="85" y="72" width="22" height="32" rx="6" fill="rgba(245,158,11,0.25)" stroke="#f59e0b"/>
+                <rect x="85" y="156" width="22" height="32" rx="6" fill="rgba(245,158,11,0.25)" stroke="#f59e0b"/>
+                <!-- Zadné svetlá -->
+                <rect x="495" y="72" width="20" height="30" rx="5" fill="rgba(244,63,94,0.25)" stroke="#f43f5e"/>
+                <rect x="495" y="158" width="20" height="30" rx="5" fill="rgba(244,63,94,0.25)" stroke="#f43f5e"/>
+                <text x="300" y="242" text-anchor="middle" fill="#64748b" font-size="9" font-family="monospace">EXTERIÉR • OSVETLENIE • STIERAČE</text>
+            `;
+        }
+
+        function renderSchematic() {
+            const { engine } = getCurrentVehicle();
+            const container = document.getElementById('svgSchematicContainer');
+            const viewParts = COMPONENTS_DB.filter(c => c.view === state.activeView);
+            const activeSymptom = SYMPTOMS_DB.find(s => s.id === state.activeSymptomId);
+            const highlightedIds = activeSymptom ? activeSymptom.highlightIds : [];
+
+            const hotspotsSVG = viewParts.map(part => {
+                const isSelected = part.id === state.selectedComponentId;
+                const isSymptomMatch = highlightedIds.includes(part.id);
+
+                let coreColor = '#06b6d4'; // tyrkysová
+                if (isSelected) coreColor = '#f59e0b'; // jantárová
+                else if (isSymptomMatch) coreColor = '#f43f5e'; // červená pri diagnostike
+
+                return `
+                    <g class="hotspot-group" onclick="selectComponent('${part.id}')">
+                        <!-- Pulzujúci kruh -->
+                        <circle cx="${part.x}" cy="${part.y}" r="14" fill="${coreColor}" class="hotspot-pulse"/>
+                        <!-- Vonkajší prstenec -->
+                        <circle cx="${part.x}" cy="${part.y}" r="11" fill="#090d16" stroke="${coreColor}" stroke-width="2.5"/>
+                        <!-- Stredová bodka -->
+                        <circle cx="${part.x}" cy="${part.y}" r="5" fill="${coreColor}" class="hotspot-core"/>
+                        <!-- Popisný štítok nad bodom -->
+                        <g transform="translate(${part.x}, ${part.y - 18})">
+                            <rect x="-48" y="-13" width="96" height="17" rx="5" fill="#090d16" fill-opacity="0.92" stroke="${coreColor}" stroke-width="${isSelected ? '1.5' : '0.8'}"/>
+                            <text x="0" y="-2" text-anchor="middle" fill="${isSelected ? '#fbbf24' : '#e2e8f0'}" font-size="9" font-weight="600" font-family="Inter, sans-serif">
+                                ${part.shortName}
+                            </text>
+                        </g>
+                    </g>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <svg viewBox="0 0 600 260" class="w-full h-auto drop-shadow-2xl">
+                    ${getBaseBlueprintSVG(state.activeView, engine.fuel)}
+                    ${hotspotsSVG}
+                </svg>
+            `;
+
+            // Rýchle tlačidlá pod schémou
+            const chipsContainer = document.getElementById('viewPartsChips');
+            chipsContainer.innerHTML = viewParts.map(part => {
+                const isSelected = part.id === state.selectedComponentId;
+                const isSymptomMatch = highlightedIds.includes(part.id);
+                return `
+                    <button onclick="selectComponent('${part.id}')" 
+                        class="px-3 py-1.5 rounded-lg text-xs font-medium border transition cursor-pointer flex items-center gap-1.5 ${
+                            isSelected 
+                                ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold' 
+                                : isSymptomMatch
+                                    ? 'bg-rose-500/20 text-rose-200 border-rose-500/60'
+                                    : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600'
+                        }">
+                        <span>${part.shortName}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectComponent(componentId) {
+            const comp = COMPONENTS_DB.find(c => c.id === componentId);
+            if (!comp) return;
+            state.selectedComponentId = componentId;
+            if (state.activeView !== comp.view) {
+                state.activeView = comp.view;
+                updateViewTabsUI();
+            }
+            renderSchematic();
+            renderDetailPanel();
+        }
+
+        // =========================================================================
+        // 9. DETAILNÝ ROZKLIKÁVACÍ MANUÁL KOMPONENTU (PRAVÝ PANEL)
+        // =========================================================================
+        function renderDifficultyWrenches(level) {
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                html += `<span class="${i <= level ? 'text-amber-400' : 'text-slate-700'} text-sm">🔧</span>`;
+            }
+            return html;
+        }
+
+        function renderDetailPanel() {
+            const vehicle = getCurrentVehicle();
+            const comp = COMPONENTS_DB.find(c => c.id === state.selectedComponentId) || COMPONENTS_DB[0];
+            const panel = document.getElementById('detailPanel');
+
+            const locationText = comp.getLocation(vehicle);
+            const specsList = comp.getSpecs(vehicle);
+
+            panel.innerHTML = `
+                <!-- Hlavička detailu komponentu -->
+                <div class="p-5 bg-gradient-to-br from-slate-900 to-slate-950 border-b border-slate-800">
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <span class="text-[11px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                            Servisná karta dielu
+                        </span>
+                        <div class="flex items-center gap-1.5 text-xs text-slate-400" title="Náročnosť opravy ${comp.difficulty}/5">
+                            <span>Náročnosť:</span>
+                            <span>${renderDifficultyWrenches(comp.difficulty)}</span>
+                        </div>
+                    </div>
+                    <h2 class="text-lg sm:text-xl font-bold text-white leading-snug">${comp.name}</h2>
+                    <div class="flex flex-wrap items-center gap-4 mt-3 text-xs text-slate-300">
+                        <span class="flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700/70">
+                            ⏱️ Čas: <strong class="text-white">${comp.time}</strong>
+                        </span>
+                        <span class="flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700/70">
+                            🚗 Model: <strong class="text-amber-400">${vehicle.brand.name} ${vehicle.model.name.split('(')[0].trim()}</strong>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Rozklikávacie sekcie (Akordeóny) -->
+                <div class="divide-y divide-slate-800/80">
+
+                    <!-- 1. KDE TO NÁJDEM -->
+                    <div class="p-4 sm:p-5">
+                        <button onclick="toggleAccordion('acc-location')" class="w-full flex items-center justify-between text-left cursor-pointer">
+                            <span class="flex items-center gap-2 font-bold text-sm text-white">
+                                <span class="text-cyan-400">📍</span> Kde to presne nájdem v aute
+                            </span>
+                            <span id="icon-acc-location" class="text-slate-400 text-xs font-mono">▼</span>
+                        </button>
+                        <div id="acc-location" class="mt-3 text-sm text-slate-300 leading-relaxed bg-slate-950/70 p-3.5 rounded-xl border border-slate-800/90">
+                            ${locationText}
+                        </div>
+                    </div>
+
+                    <!-- 2. TECHNICKÉ ŠPECIFIKÁCIE A NÁPLNE -->
+                    <div class="p-4 sm:p-5">
+                        <button onclick="toggleAccordion('acc-specs')" class="w-full flex items-center justify-between text-left cursor-pointer">
+                            <span class="flex items-center gap-2 font-bold text-sm text-white">
+                                <span class="text-amber-400">📋</span> Technické špecifikácie a hodnoty
+                            </span>
+                            <span id="icon-acc-specs" class="text-slate-400 text-xs font-mono">▼</span>
+                        </button>
+                        <div id="acc-specs" class="mt-3 space-y-2">
+                            ${specsList.map(spec => {
+                                const isLocked = spec.pro && !state.isPro;
+                                return `
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 bg-slate-950/70 px-3.5 py-2.5 rounded-xl border ${spec.pro ? 'border-amber-500/25' : 'border-slate-800/90'}">
+                                        <span class="text-xs text-slate-400 flex items-center gap-1.5">
+                                            ${spec.label}
+                                            ${spec.pro ? '<span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400">PRO</span>' : ''}
+                                        </span>
+                                        ${isLocked 
+                                            ? `<button onclick="openProModal()" class="text-xs font-semibold text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer">🔒 Odomknúť v PRO</button>`
+                                            : `<span class="text-xs font-mono font-semibold text-white">${spec.value}</span>`
+                                        }
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <!-- 3. POSTUP VÝMENY KROK ZA KROKOM + NÁRADIE -->
+                    <div class="p-4 sm:p-5">
+                        <button onclick="toggleAccordion('acc-steps')" class="w-full flex items-center justify-between text-left cursor-pointer">
+                            <span class="flex items-center gap-2 font-bold text-sm text-white">
+                                <span class="text-emerald-400">🛠️</span> Postup výmeny krok za krokom
+                            </span>
+                            <span id="icon-acc-steps" class="text-slate-400 text-xs font-mono">▼</span>
+                        </button>
+                        <div id="acc-steps" class="mt-3 space-y-3">
+                            <!-- Potrebné náradie -->
+                            <div class="bg-slate-950/70 p-3 rounded-xl border border-slate-800/90">
+                                <div class="text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-1.5">Potrebné náradie:</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${comp.tools.map(t => `<span class="text-xs bg-slate-800 text-slate-200 px-2.5 py-1 rounded-lg">${t}</span>`).join('')}
+                                </div>
+                            </div>
+                            <!-- Kroky -->
+                            <ol class="space-y-2.5">
+                                ${comp.steps.map((step, idx) => `
+                                    <li class="flex gap-3 text-xs sm:text-sm text-slate-300 bg-slate-950/50 p-3 rounded-xl border border-slate-800/60">
+                                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center font-mono text-xs font-bold">
+                                            ${idx + 1}
+                                        </span>
+                                        <span class="leading-relaxed">${step}</span>
+                                    </li>
+                                `).join('')}
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- 4. PRÍZNAKY PORUCHY -->
+                    <div class="p-4 sm:p-5">
+                        <button onclick="toggleAccordion('acc-symptoms')" class="w-full flex items-center justify-between text-left cursor-pointer">
+                            <span class="flex items-center gap-2 font-bold text-sm text-white">
+                                <span class="text-rose-400">🚨</span> Kedy to treba riešiť (príznaky)
+                            </span>
+                            <span id="icon-acc-symptoms" class="text-slate-400 text-xs font-mono">▼</span>
+                        </button>
+                        <div id="acc-symptoms" class="mt-3">
+                            <ul class="space-y-1.5 text-xs sm:text-sm text-slate-300 bg-rose-950/15 border border-rose-500/20 p-3.5 rounded-xl">
+                                ${comp.symptoms.map(s => `<li class="flex items-start gap-2"><span class="text-rose-400 mt-0.5">•</span><span>${s}</span></li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 5. CENOVÉ POROVNANIE: DIY SVOJPOMOCNE VS. SERVIS -->
+                    <div class="p-4 sm:p-5 bg-slate-950/60">
+                        <div class="text-xs font-mono uppercase tracking-wider text-slate-400 mb-3">Orientačné náklady na opravu</div>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                                <div class="text-[11px] text-emerald-300 font-medium">Svojpomocne (DIY diel)</div>
+                                <div class="text-sm sm:text-base font-extrabold text-emerald-400 mt-0.5">${comp.diyCost}</div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                                <div class="text-[11px] text-slate-400 font-medium">V autoservise (práca + diel)</div>
+                                <div class="text-sm sm:text-base font-bold text-slate-200 mt-0.5">${comp.serviceCost}</div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-2.5">
+                            <button onclick="copyPartSpec()" class="flex-1 py-2.5 px-3.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-2">
+                                📋 Kopírovať špecifikáciu dielu
+                            </button>
+                            ${!state.isPro ? `
+                                <button onclick="openProModal()" class="py-2.5 px-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition cursor-pointer">
+                                    ★ Odomknúť PRO dáta
+                                </button>
+                            ` : `
+                                <span class="py-2.5 px-3.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold text-center">
+                                    ✓ PRO dáta odomknuté
+                                </span>
+                            `}
+                        </div>
+                    </div>
+
+                </div>
+            `;
+        }
+
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            if (!content) return;
+            const isHidden = content.classList.contains('hidden');
+            if (isHidden) {
+                content.classList.remove('hidden');
+                icon.textContent = '▼';
+            } else {
+                content.classList.add('hidden');
+                icon.textContent = '▶';
+            }
+        }
+
+        // =========================================================================
+        // 10. KOPÍROVANIE DO SCHRÁNKY (BEZPEČNÉ EXEC-COMMAND) & PRO MODÁL
+        // =========================================================================
+        function copyPartSpec() {
+            const v = getCurrentVehicle();
+            const comp = COMPONENTS_DB.find(c => c.id === state.selectedComponentId);
+            const textToCopy = `AutoMech Pro | ${v.brand.name} ${v.model.name} (${v.engine.name}) | Diel: ${comp.name} | Olej: ${v.engine.oilSpec} (${v.engine.oilCap}) | Batéria: ${v.engine.battery}`;
+
+            const tempInput = document.createElement('textarea');
+            tempInput.value = textToCopy;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                showToast('Technická špecifikácia dielu bola skopírovaná do schránky.', '✅');
+            } catch (err) {
+                showToast('Nepodarilo sa skopírovať text.', '⚠️');
+            }
+            document.body.removeChild(tempInput);
+        }
+
+        function toggleProMode() {
+            if (state.isPro) {
+                state.isPro = false;
+                updateProUI();
+                renderDetailPanel();
+                showToast('Prepli ste späť do bezplatného režimu FREE.', 'ℹ️');
+            } else {
+                openProModal();
+            }
+        }
+
+        function openProModal() {
+            const modal = document.getElementById('proModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeProModal() {
+            const modal = document.getElementById('proModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function activateProDemo() {
+            state.isPro = true;
+            closeProModal();
+            updateProUI();
+            renderDetailPanel();
+            showToast('PRO režim aktivovaný! Uťahovacie momenty a OEM kódy sú odomknuté.', '★');
+        }
+
+        function updateProUI() {
+            const btn = document.getElementById('proToggleBtn');
+            const dot = document.getElementById('proStatusDot');
+            const label = document.getElementById('proStatusLabel');
+            if (state.isPro) {
+                btn.className = 'flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border cursor-pointer bg-amber-500/15 border-amber-500 text-amber-300';
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
+                label.textContent = 'Režim: PRO AKTÍVNY';
+            } else {
+                btn.className = 'flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition border cursor-pointer bg-slate-900 border-slate-700 text-slate-300 hover:border-amber-500/60';
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-500';
+                label.textContent = 'Režim: FREE';
+            }
+        }
+
+        // =========================================================================
+        // 11. EVENT LISTENERY A INICIALIZÁCIA PO NAČÍTANÍ OKNA
+        // =========================================================================
+        window.onload = function () {
+            // Filter značiek
+            document.getElementById('brandFilterInput').addEventListener('input', (e) => {
+                state.brandFilter = e.target.value;
+                renderBrands();
+            });
+
+            // Zmena modelu
+            document.getElementById('modelSelect').addEventListener('change', (e) => {
+                state.selectedModelId = e.target.value;
+                const { model } = getCurrentVehicle();
+                state.selectedEngineId = model.engines[0].id;
+                renderSelectors();
+                renderSchematic();
+                renderDetailPanel();
+            });
+
+            // Zmena motorizácie
+            document.getElementById('engineSelect').addEventListener('change', (e) => {
+                state.selectedEngineId = e.target.value;
+                renderSelectors();
+                renderSchematic();
+                renderDetailPanel();
+            });
+
+            // Prepínanie pohľadov schémy
+            document.querySelectorAll('.view-tab').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.activeView = btn.dataset.view;
+                    const firstPartInView = COMPONENTS_DB.find(c => c.view === state.activeView);
+                    if (firstPartInView) {
+                        state.selectedComponentId = firstPartInView.id;
+                    }
+                    updateViewTabsUI();
+                    renderSchematic();
+                    renderDetailPanel();
+                });
+            });
+
+            // Globálne vyhľadávanie dielu / komponentu
+            document.getElementById('globalPartSearch').addEventListener('input', (e) => {
+                const query = e.target.value.trim().toLowerCase();
+                if (!query) return;
+
+                const match = COMPONENTS_DB.find(c => 
+                    c.name.toLowerCase().includes(query) || 
+                    c.shortName.toLowerCase().includes(query) ||
+                    c.symptoms.some(s => s.toLowerCase().includes(query))
+                );
+
+                if (match) {
+                    state.activeView = match.view;
+                    state.selectedComponentId = match.id;
+                    updateViewTabsUI();
+                    renderSchematic();
+                    renderDetailPanel();
+                }
+            });
+
+            // Prvotné vykreslenie aplikácie
+            renderBrands();
+            renderSelectors();
+            renderSymptoms();
+            updateViewTabsUI();
+            renderSchematic();
+            renderDetailPanel();
+        };
+    </script>
+</body>
+</html>
