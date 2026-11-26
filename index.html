@@ -39,11 +39,11 @@
         <div class="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 font-extrabold flex items-center justify-center text-sm">AM</div>
         <div>
           <div class="font-bold text-base leading-tight">AutoMech Pro</div>
-          <div class="text-xs text-slate-400">Komplet ročníky • Servis, schéma a diely</div>
+          <div class="text-xs text-slate-400">Komplet ročníky • Motorizácie • Diely</div>
         </div>
       </div>
       <span class="text-xs px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-medium">
-        Všetky ročníky
+        Všetky ročníky + vlastný motor
       </span>
     </div>
   </header>
@@ -69,6 +69,20 @@
         <div>
           <label class="block text-xs text-slate-400 mb-1">Motorizácia a kód motora</label>
           <select id="engineSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500"></select>
+        </div>
+      </div>
+
+      <div id="customEngineBox" class="hidden grid-cols-1 sm:grid-cols-3 gap-2.5 bg-slate-950/90 border border-amber-500/30 rounded-xl p-3">
+        <div class="sm:col-span-2">
+          <label class="block text-xs text-amber-300 mb-1">Zadajte vlastnú motorizáciu / výkon / kód motora</label>
+          <input id="customEngineInput" type="text" placeholder="Napr. 1.9 TDI 81 kW AHF alebo 2.0 HDI 100 kW RHR..."
+            class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500" />
+        </div>
+        <div class="flex items-end">
+          <button id="applyCustomEngineBtn" type="button"
+            class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm rounded-lg px-3 py-2 transition">
+            Použiť motor
+          </button>
         </div>
       </div>
 
@@ -131,196 +145,198 @@
   </main>
 
   <script>
+    const CUSTOM_ENGINE_LABEL = "➕ Vlastná motorizácia (dopísať kód/kW)";
+
     const DB = {
       "Škoda": {
         code: "ŠK",
         models: [
-          { name: "105 / 120 / Favorit (1976–1994)", engines: ["1.2 (38 kW / 781.135)", "1.3 BMM (40/50 kW / 136B)", "1.2 (37/43 kW)"] },
-          { name: "Felicia (1994–2001)", engines: ["1.3 MPI (50 kW / AMH)", "1.6 MPI (55 kW / AEE)", "1.9 D (47 kW / AEF)"] },
-          { name: "Fabia I (1999–2008)", engines: ["1.2 HTP (47 kW / AZQ)", "1.4 16V (55 kW / BKY)", "1.9 TDI (74 kW / ATD)"] },
-          { name: "Octavia I (1996–2010)", engines: ["1.6 (74 kW / AEH)", "1.8T (110 kW / AUM)", "1.9 TDI (66 kW / ALH)", "1.9 TDI (96 kW / ASZ)"] },
-          { name: "Fabia II / Roomster (2006–2015)", engines: ["1.2 HTP (51 kW / BZG)", "1.4 TDI (59 kW / BMS)", "1.6 TDI (77 kW / CAYB)", "1.2 TSI (77 kW / CBZB)"] },
-          { name: "Octavia II (2004–2013)", engines: ["1.6 MPI (75 kW / BGU)", "1.9 TDI (77 kW / BKC)", "2.0 TDI PD (103 kW / BMM)", "1.8 TSI (118 kW / BZB)"] },
-          { name: "Superb I / II (2001–2015)", engines: ["1.9 TDI (96 kW / AVF)", "2.5 TDI (120 kW / AYM)", "2.0 TDI CR (125 kW / CFGB)"] },
-          { name: "Octavia III / IV (2013–2026)", engines: ["1.6 TDI (77/85 kW / CLHA/DGTE)", "2.0 TDI (110/147 kW / CRLB/DTUA)", "1.5 TSI (110 kW / DPCA)"] },
-          { name: "Kodiaq / Karoq / Superb III–IV (2016–2026)", engines: ["2.0 TDI (110/147 kW)", "1.5 TSI mHEV (110 kW)", "2.0 TSI (140/195 kW)"] }
+          { name: "105 / 120 / 130 / Favorit (1976–1994)", engines: ["1.0 (33 kW / 742.10)", "1.2 (37–38 kW / 742.12/781.135)", "1.3 BMM/Bazi (40/43/50 kW / 136B)", CUSTOM_ENGINE_LABEL] },
+          { name: "Felicia (1994–2001)", engines: ["1.3 MPI (40/50 kW / AMH/AMG)", "1.6 MPI (55 kW / AEE)", "1.9 D (47 kW / AEF)", CUSTOM_ENGINE_LABEL] },
+          { name: "Fabia I (1999–2008)", engines: ["1.2 HTP (40/47 kW / AWY/BMD/AZQ/BME)", "1.4 MPI / 16V (44/50/55/74 kW / AME/AQW/BKY/BBZ)", "1.9 SDI (47 kW / ASY)", "1.9 TDI (74/96 kW / ATD/AXR/ASZ)", "2.0 (85 kW / AZL)", CUSTOM_ENGINE_LABEL] },
+          { name: "Octavia I (1996–2010)", engines: ["1.4 16V (55 kW / AXP/BCA)", "1.6 (55/74/75 kW / AEE/AEH/AKL/BFQ)", "1.8 / 1.8T (92/110/132 kW / AGN/AGU/AUM/AUQ)", "1.9 SDI (50 kW / AGP/AQM)", "1.9 TDI (66/81/96 kW / ALH/AGR/ASV/ASZ)", "2.0 (85 kW / AQY/AZH/AZJ)", CUSTOM_ENGINE_LABEL] },
+          { name: "Fabia II / Roomster (2006–2015)", engines: ["1.2 HTP / TSI (44/51/63/77 kW / BBM/CHFA/BZG/CBZA/CBZB)", "1.4 / 1.6 16V (63/77 kW / BXW/CGGB/BTS/CFNA)", "1.4 / 1.6 / 1.9 TDI (51/59/66/77 kW / BNM/BNV/BMS/CAYA/CAYB/CAYC/AXR/BSW)", CUSTOM_ENGINE_LABEL] },
+          { name: "Octavia II (2004–2013)", engines: ["1.4 / 1.6 / 1.6 FSI (59/75/85 kW / BUD/CGGA/BGU/BSE/CCSA/BLF)", "1.2 / 1.4 / 1.8 / 2.0 TSI (77/90/118/147 kW / CBZB/CAXA/CDAA/BWA/CCZA)", "1.9 TDI (77 kW / BJB/BKC/BXE/BLS)", "2.0 TDI (100/103/125 kW / AZV/BKD/BMM/BMN/CEGA)", CUSTOM_ENGINE_LABEL] },
+          { name: "Superb I / II (2001–2015)", engines: ["1.9 TDI (77/96 kW / AVB/AWX/AVF/BLS)", "2.0 TDI (103/125 kW / BSS/BMP/CBBB/CFGB)", "2.5 TDI V6 (114/120 kW / AYM/BDG)", "1.8 TSI / 2.0 TSI (118/147 kW / CDAA/CCZA)", "3.6 FSI V6 (191 kW / CDVA)", CUSTOM_ENGINE_LABEL] },
+          { name: "Octavia III / IV (2013–2026)", engines: ["1.0 / 1.2 / 1.4 / 1.5 TSI (63/75/81/85/103/110 kW / CJZB/CYVB/CHPA/CZDA/DPCA/DXDB)", "2.0 TSI (132/140/169/180/195 kW)", "1.6 TDI (66/77/81/85 kW / CLHB/CLHA/CRKB/CXXB/DGTE)", "2.0 TDI (105/110/135/147 kW / CKFC/CRLB/CUPA/DTUA)", CUSTOM_ENGINE_LABEL] },
+          { name: "Kodiaq / Karoq / Superb III–IV (2016–2026)", engines: ["1.5 TSI / eTSI (110 kW)", "2.0 TSI (132/140/195/206 kW)", "2.0 TDI (110/140/147 kW)", "Plug-in Hybrid / iV", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Volkswagen": {
         code: "VW",
         models: [
-          { name: "Golf I / II (1974–1992)", engines: ["1.6 D (40 kW / JP)", "1.6 TD (51/59 kW / JR/SB)", "1.8 GTI (82 kW / PB)"] },
-          { name: "Golf III (1991–1998)", engines: ["1.8 (66 kW / ABS)", "1.9 TDI (66 kW / 1Z)", "1.9 TDI (81 kW / AFN)"] },
-          { name: "Golf IV (1997–2005)", engines: ["1.6 16V (77 kW / AZD)", "1.9 TDI (74 kW / AXR)", "1.9 TDI (96 kW / ASZ)", "1.8T (110 kW / AGU)"] },
-          { name: "Passat B5 / B5.5 (1996–2005)", engines: ["1.9 TDI (81 kW / AFN)", "1.9 TDI (96 kW / AVF)", "2.0 TDI (100 kW / BGW)"] },
-          { name: "Golf V / VI (2003–2012)", engines: ["1.9 TDI (77 kW / BXE)", "2.0 TDI (103 kW / CBAB)", "1.4 TSI (90 kW / CAXA)"] },
-          { name: "Passat B6 / B7 (2005–2015)", engines: ["2.0 TDI PD (103/125 kW)", "2.0 TDI CR (103/130 kW)", "1.8 TSI (118 kW / CDAA)"] },
-          { name: "Golf VII / VIII (2013–2026)", engines: ["1.6 TDI (81/85 kW / CXXB/DGTE)", "2.0 TDI (110 kW / CRBC)", "1.5 eTSI (110 kW / DFYA)"] },
-          { name: "Passat B8 / B9 (2015–2026)", engines: ["2.0 TDI (110 kW / CRLB)", "2.0 TDI BiTurbo (176 kW / CUAA)", "1.5 eTSI / eHybrid"] },
-          { name: "Tiguan I / II / III (2007–2026)", engines: ["2.0 TDI (103/110/140 kW)", "1.4 / 1.5 TSI (110 kW)", "2.0 TSI (140/195 kW)"] }
+          { name: "Golf I / II (1974–1992)", engines: ["1.3 / 1.6 / 1.8 (40–82 kW / HK/PN/GU/PB)", "1.6 D / TD (40/51/59 kW / JP/JR/MF/SB)", "1.8 GTI 16V (95/102 kW / KR/PL)", CUSTOM_ENGINE_LABEL] },
+          { name: "Golf III / Vento (1991–1998)", engines: ["1.4 / 1.6 / 1.8 (44/55/66/74 kW / ABD/AEX/ABU/ABS/AFT)", "2.0 GTI (85 kW / 2E/AGG/AKR)", "1.9 D / TD (47/55 kW / 1Y/AAZ)", "1.9 TDI (66/81 kW / 1Z/AHU/AFN)", CUSTOM_ENGINE_LABEL] },
+          { name: "Golf IV / Bora (1997–2005)", engines: ["1.4 / 1.6 / 1.6 FSI (55/74/75/77/81 kW / AXP/BCA/AKL/AVU/BFQ/AZD/BAD)", "1.8 / 1.8T / 2.3 V5 (92/110/132/110/125 kW / AGN/AGU/ARZ/AUM/AUQ/AGZ/AQN)", "1.9 SDI (50 kW / AGP/AQM)", "1.9 TDI (66/74/81/96/110 kW / AGR/ALH/ATD/AXR/AHF/ASV/ASZ/ARL)", CUSTOM_ENGINE_LABEL] },
+          { name: "Passat B5 / B5.5 (1996–2005)", engines: ["1.6 / 1.8 / 1.8T (74/75/92/110/125 kW / ADP/AHL/ADR/AEB/APU/AWT)", "2.0 / 2.3 V5 / 2.8 V6 (85/96/110/125/142 kW)", "1.9 TDI (66/74/81/96 kW / AHU/AFN/AVB/AVF/AWX)", "2.0 TDI (100 kW / BGW/BHW)", "2.5 TDI V6 (110/120/132 kW / AFB/AKN/AYM/BDG/BAU)", CUSTOM_ENGINE_LABEL] },
+          { name: "Golf V / VI (2003–2012)", engines: ["1.4 / 1.6 / 1.6 FSI (55/59/75/85 kW / BUD/CGGA/BGU/BSE/BLF)", "1.2 / 1.4 / 1.8 / 2.0 TSI & GTI (63/77/90/103/118/147/155/173 kW)", "1.9 TDI (66/77 kW / BRU/BXF/BXJ/BKC/BLS/BXE)", "2.0 TDI (100/103/125 kW / AZV/BKD/BMM/CBAB/CBBB)", CUSTOM_ENGINE_LABEL] },
+          { name: "Passat B6 / B7 / CC (2005–2015)", engines: ["1.4 / 1.8 / 2.0 TSI (90/112/118/147/155 kW)", "1.6 TDI / 1.9 TDI (77 kW / CAYC/BKC/BXE)", "2.0 TDI (81/100/103/125/130 kW / CBDC/BKP/BMR/CBAB/CBBB/CFGB/CLLA)", CUSTOM_ENGINE_LABEL] },
+          { name: "Golf VII / VIII (2013–2026)", engines: ["1.0 / 1.2 / 1.4 / 1.5 TSI & eTSI (63–110 kW)", "2.0 TSI GTI / R (169–245 kW)", "1.6 TDI (66/81/85 kW / CLHA/CRKB/CXXB/DGTE)", "2.0 TDI (85/110/135/147 kW / CRLB/DFGA/DTUA)", CUSTOM_ENGINE_LABEL] },
+          { name: "Passat B8 / B9 (2015–2026)", engines: ["1.4 / 1.5 / 2.0 TSI & eHybrid", "1.6 TDI (88 kW / DCXA)", "2.0 TDI (88/110/140/176 kW / CRLB/DFGA/DDAA/CUAA/DTUA)", CUSTOM_ENGINE_LABEL] },
+          { name: "Tiguan / Touran / Caddy (2003–2026)", engines: ["1.6 / 1.9 / 2.0 TDI (75–176 kW)", "1.4 / 1.5 / 2.0 TSI", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Audi": {
         code: "AU",
         models: [
-          { name: "80 / 100 (1978–1994)", engines: ["1.9 TDI (66 kW / 1Z)", "2.0 E (85 kW / ABK)", "2.3 E (98 kW / AAR)"] },
-          { name: "A4 B5 (1994–2001)", engines: ["1.9 TDI (81 kW / AFN)", "1.8T (110 kW / AEB)", "2.4 V6 (121 kW / AGA)"] },
-          { name: "A6 C5 (1997–2004)", engines: ["1.9 TDI (96 kW / AVF)", "2.5 TDI (132 kW / AKE)", "2.4 (125 kW / BDV)"] },
-          { name: "A3 8L / 8P (1996–2012)", engines: ["1.9 TDI (74/77/96 kW)", "2.0 TDI (103/125 kW)", "1.8 TFSI (118 kW)"] },
-          { name: "A4 B6 / B7 (2000–2008)", engines: ["1.9 TDI (96 kW / AWX)", "2.0 TDI (103 kW / BPW)", "3.0 TDI (171 kW / ASB)"] },
-          { name: "A6 C6 / C7 (2004–2018)", engines: ["2.0 TDI (103/130/140 kW)", "2.7 / 3.0 TDI V6 (132–235 kW)"] },
-          { name: "A4 B8 / B9 (2007–2025)", engines: ["2.0 TDI (105/110 kW / CAGA/DESA)", "2.0 TDI (140 kW / DETA)", "2.0 TFSI (140 kW / CYMC)"] },
-          { name: "Q5 / Q7 (2005–2026)", engines: ["3.0 TDI V6 (171–210 kW)", "2.0 TDI (110/140/150 kW)"] }
+          { name: "80 / 90 / 100 (1978–1994)", engines: ["1.6 / 1.8 / 2.0 / 2.3 (51–100 kW / PM/ABK/AAR)", "1.6 TD / 1.9 TDI (51/59/66 kW / RA/SB/1Z)", CUSTOM_ENGINE_LABEL] },
+          { name: "A4 B5 (1994–2001)", engines: ["1.6 / 1.8 / 1.8T / 2.4 / 2.8 (74–142 kW / ADP/AEB/APU/AJL/AGA/ACK)", "1.9 TDI (55/66/81/85 kW / AFF/1Z/AHU/AFN/AVG/AJM)", "2.5 TDI V6 (110 kW / AFB/AKN)", CUSTOM_ENGINE_LABEL] },
+          { name: "A6 C5 (1997–2004)", engines: ["1.8T / 2.4 / 2.8 / 3.0 / 4.2 (110–220 kW)", "1.9 TDI (81/96 kW / AFN/AVG/AJM/AVF/AWX)", "2.5 TDI V6 (110/114/120/132 kW / AFB/AKE/AYM/BCZ/BDH)", CUSTOM_ENGINE_LABEL] },
+          { name: "A3 8L / 8P / 8V / 8Y (1996–2026)", engines: ["1.6 / 1.8 / 1.8T / 2.0 TFSI / 1.5 TFSI", "1.9 TDI (66/74/77/96 kW)", "2.0 TDI (100/103/110/125/135 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "A4 B6 / B7 (2000–2008)", engines: ["1.6 / 1.8T / 2.0 / 2.0 TFSI / 3.0 / 3.2 FSI", "1.9 TDI (74/85/96 kW / AVB/BKE/BRB/AWX/AVF)", "2.0 TDI (100/103/125 kW / BPW/BLB/BRE/BRD/BVF)", "2.5 / 3.0 TDI V6 (120/150/171 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "A6 C6 / C7 / C8 (2004–2026)", engines: ["2.0 TDI / 2.0 TFSI / 3.0 TFSI", "2.7 / 3.0 TDI V6 (132–240 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "A4 B8 / B9 (2007–2025)", engines: ["1.8 / 2.0 TFSI (88–185 kW)", "2.0 TDI (88/100/105/110/120/130/140 kW / CAGA/CAGB/CGLC/DETA/DEUA)", "3.0 TDI V6 (150/160/176/180/200 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "Q3 / Q5 / Q7 (2005–2026)", engines: ["2.0 TDI (100–150 kW)", "3.0 TDI V6 (155–210 kW)", "TFSI / TFSI e Hybrid", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "BMW": {
         code: "BMW",
         models: [
-          { name: "Rad 3 E30 (1982–1994)", engines: ["316i / 318i (75/83 kW / M40)", "324td (85 kW / M21)", "325i (125 kW / M20)"] },
-          { name: "Rad 3 E36 (1990–2000)", engines: ["316i (75 kW / M43)", "318tds (66 kW / M41)", "328i (142 kW / M52)"] },
-          { name: "Rad 5 E34 / E39 (1988–2004)", engines: ["525tds (105 kW / M51)", "525d / 530d (120/142 kW / M57)", "528i (142 kW / M52)"] },
-          { name: "Rad 3 E46 (1998–2006)", engines: ["318i (105 kW / N42)", "320d (110 kW / M47N)", "330d (150 kW / M57N)"] },
-          { name: "Rad 3 E90 / E91 / E92 (2005–2013)", engines: ["320d (120 kW / M47)", "320d (130/135 kW / N47)", "330d (170/180 kW / M57/N57)"] },
-          { name: "Rad 5 E60 / F10 (2003–2017)", engines: ["520d (120/130/135/140 kW)", "530d (160/173/180/190 kW)"] },
-          { name: "Rad 3 F30 / G20 (2012–2026)", engines: ["320d (135/140 kW / N47/B47)", "330i (185/190 kW / B48)"] },
-          { name: "X3 / X5 (1999–2026)", engines: ["3.0d / xDrive30d (150–210 kW)", "2.0d / xDrive20d (110–140 kW)"] }
+          { name: "Rad 3 E30 (1982–1994)", engines: ["316 / 316i / 318i / 318is (66/75/83/100 kW / M10/M40/M42)", "320i / 325i / 325ix (95/125/126 kW / M20)", "324d / 324td (63/85 kW / M21)", CUSTOM_ENGINE_LABEL] },
+          { name: "Rad 3 E36 (1990–2000)", engines: ["316i / 318i / 318is (73/75/85/103 kW / M40/M43/M42/M44)", "320i / 323i / 325i / 328i (110/125/141/142 kW / M50/M52)", "318tds / 325tds (66/105 kW / M41/M51)", CUSTOM_ENGINE_LABEL] },
+          { name: "Rad 5 E34 / E39 (1988–2004)", engines: ["520i / 523i / 525i / 528i / 530i / 540i", "524td / 525tds (85/105 kW / M21/M51)", "520d / 525d / 530d (100/120/135/142 kW / M47/M57)", CUSTOM_ENGINE_LABEL] },
+          { name: "Rad 3 E46 (1998–2006)", engines: ["316i / 318i / 320i / 323i / 325i / 328i / 330i", "318d / 320d / 330d (85/100/110/135/150 kW / M47/M47N/M57/M57N)", CUSTOM_ENGINE_LABEL] },
+          { name: "Rad 3 E90 / E91 / E92 / E93 (2005–2013)", engines: ["316i / 318i / 320i / 325i / 330i / 335i", "316d / 318d / 320d / 325d / 330d / 335d (85–210 kW / M47/N47/M57/N57)", CUSTOM_ENGINE_LABEL] },
+          { name: "Rad 5 E60 / E61 / F10 / F11 / G30 (2003–2023)", engines: ["520d / 525d / 530d / 535d / 540d (120–235 kW)", "520i / 523i / 525i / 528i / 530i / 540i", CUSTOM_ENGINE_LABEL] },
+          { name: "Rad 3 F30 / F31 / G20 / G21 (2012–2026)", engines: ["316d / 318d / 320d / 330d (85–210 kW / N47/B47)", "318i / 320i / 330i / 340i (B38/B48/B58)", CUSTOM_ENGINE_LABEL] },
+          { name: "X1 / X3 / X5 / X6 (1999–2026)", engines: ["18d / 20d / 25d / 30d / 35d / 40d", "20i / 28i / 30i / 35i / 40i / xDrive Hybrid", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Mercedes-Benz": {
         code: "MB",
         models: [
-          { name: "190 W201 / Trieda E W124 (1982–1996)", engines: ["200 D / 250 D / 300 D (OM601/OM602/OM603)", "230 E (97/100 kW / M102)"] },
-          { name: "Trieda C W202 (1993–2000)", engines: ["C 220 CDI (92 kW / OM611)", "C 200 Kompressor (141 kW / M111)"] },
-          { name: "Trieda E W210 (1995–2003)", engines: ["E 220 CDI (105 kW / OM611)", "E 270 CDI (125 kW / OM612)", "E 320 CDI (145 kW / OM613)"] },
-          { name: "Trieda C W203 / W204 (2000–2014)", engines: ["C 220 CDI (110 kW / OM646)", "C 220 CDI (125 kW / OM651)"] },
-          { name: "Trieda E W211 / W212 (2002–2016)", engines: ["E 220 CDI (125 kW / OM646/OM651)", "E 350 CDI (195 kW / OM642)"] },
-          { name: "Trieda C W205 / W206 & E W213 (2014–2026)", engines: ["220d (125/143/147 kW / OM651/OM654)", "300d / 350d"] }
+          { name: "190 W201 / Trieda E W124 (1982–1996)", engines: ["200 D / 250 D / 250 TD / 300 D / 300 TD (OM601/OM602/OM603)", "190 E / 200 E / 230 E / 260 E / 300 E (M102/M103)", CUSTOM_ENGINE_LABEL] },
+          { name: "Trieda C W202 (1993–2000)", engines: ["C 180 / C 200 / C 220 / C 230 / C 240 / C 280 (M111/M112)", "C 200 D / C 220 D / C 250 TD / C 200 CDI / C 220 CDI (OM601/OM604/OM605/OM611)", CUSTOM_ENGINE_LABEL] },
+          { name: "Trieda E W210 (1995–2003)", engines: ["E 200 / E 230 / E 240 / E 280 / E 320 / E 430", "E 200 CDI / E 220 CDI / E 270 CDI / E 320 CDI (OM611/OM612/OM613)", CUSTOM_ENGINE_LABEL] },
+          { name: "Trieda C W203 / W204 (2000–2014)", engines: ["C 180 / C 200 / C 230 / C 250 / C 280 / C 300 / C 350", "C 200 CDI / C 220 CDI / C 250 CDI / C 320 CDI / C 350 CDI (OM646/OM651/OM642)", CUSTOM_ENGINE_LABEL] },
+          { name: "Trieda E W211 / W212 (2002–2016)", engines: ["E 200 CDI / E 220 CDI / E 250 CDI / E 280 CDI / E 300 CDI / E 350 CDI", "E 200 / E 250 / E 350 / E 500", CUSTOM_ENGINE_LABEL] },
+          { name: "Trieda C W205 / W206 & E W213 / W214 (2014–2026)", engines: ["180d / 200d / 220d / 300d / 350d / 400d (OM651/OM654/OM656)", "180 / 200 / 300 / Plug-in Hybrid", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Toyota": {
         code: "TOY",
         models: [
-          { name: "Corolla E80 / E90 / E100 (1983–1997)", engines: ["1.3 / 1.6 (4E-FE / 4A-FE)", "1.8 / 2.0 Diesel (1C / 2C)"] },
-          { name: "Corolla E11 / E12 (1997–2007)", engines: ["1.4 VVT-i (71 kW / 4ZZ-FE)", "1.6 VVT-i (81 kW / 3ZZ-FE)", "2.0 D-4D (66/85 kW / 1CD-FTV)"] },
-          { name: "Avensis T22 / T25 / T27 (1997–2018)", engines: ["2.0 D-4D (85/93 kW)", "2.2 D-4D (110/130 kW / 2AD)"] },
-          { name: "RAV4 XA10 / XA20 / XA30 (1994–2012)", engines: ["2.0 D-4D (85/100 kW)", "2.0 VVT-i (95/110 kW)"] },
-          { name: "Corolla / C-HR / RAV4 Hybrid (2016–2026)", engines: ["1.8 Hybrid (90/103 kW)", "2.0 Hybrid (135/145 kW)", "2.5 Hybrid (131–165 kW)"] }
+          { name: "Corolla E80 / E90 / E100 / E110 (1983–2002)", engines: ["1.3 / 1.4 / 1.6 / 1.8 (2E/4E-FE/4A-FE/7A-FE)", "1.8 D / 2.0 D (1C/2C)", CUSTOM_ENGINE_LABEL] },
+          { name: "Corolla E120 / Auris (2000–2018)", engines: ["1.4 / 1.6 VVT-i / Valvematic (4ZZ-FE/3ZZ-FE/1ZR-FAE)", "1.4 D-4D / 2.0 D-4D / 2.2 D-4D (1ND/1CD/2AD)", "1.8 Hybrid (2ZR-FXE)", CUSTOM_ENGINE_LABEL] },
+          { name: "Avensis T22 / T25 / T27 (1997–2018)", engines: ["1.6 / 1.8 / 2.0 / 2.4 VVT-i / Valvematic", "2.0 D-4D (66/81/85/91/93/105 kW)", "2.2 D-4D / D-CAT (110/130 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "RAV4 XA10 / XA20 / XA30 / XA40 / XA50 (1994–2026)", engines: ["2.0 / 2.4 VVT-i", "2.0 D-4D / 2.2 D-4D (85/100/110/130 kW)", "2.5 Hybrid / Plug-in Hybrid", CUSTOM_ENGINE_LABEL] },
+          { name: "Yaris / C-HR / Corolla Cross (1999–2026)", engines: ["1.0 / 1.33 / 1.5 VVT-i", "1.4 D-4D (66 kW)", "1.5 / 1.8 / 2.0 Hybrid", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Ford": {
         code: "FRD",
         models: [
-          { name: "Escort / Sierra / Mondeo Mk1–Mk2 (1980–2000)", engines: ["1.8 TD (51/66 kW / Endura-DE)", "1.6 / 1.8 / 2.0 Zetec"] },
-          { name: "Focus Mk1 (1998–2004)", engines: ["1.6 16V (74 kW / FYDA)", "1.8 TDCi (74/85 kW / FFDA)"] },
-          { name: "Mondeo Mk3 / Mk4 (2000–2014)", engines: ["2.0 TDCi (85/96/103/120 kW)", "2.2 TDCi (114/147 kW)"] },
-          { name: "Focus Mk2 / Mk3 (2004–2018)", engines: ["1.6 TDCi (66/80/85 kW)", "2.0 TDCi (100/110 kW)", "1.0 EcoBoost (74/92 kW)"] },
-          { name: "Focus Mk4 / Kuga (2018–2026)", engines: ["1.0 EcoBoost Hybrid (92/114 kW)", "1.5 / 2.0 EcoBlue (88/110 kW)"] }
+          { name: "Escort / Fiesta / Sierra / Mondeo Mk1–Mk2 (1980–2000)", engines: ["1.4 / 1.6 / 1.8 / 2.0 Zetec / CVH", "1.8 D / 1.8 TD (44/51/66 kW / Endura)", CUSTOM_ENGINE_LABEL] },
+          { name: "Focus Mk1 (1998–2004)", engines: ["1.4 / 1.6 / 1.8 / 2.0 16V Zetec (55/74/85/96 kW)", "1.8 TDCi / TDDi (55/66/74/85 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "Mondeo Mk3 / Mk4 / Mk5 (2000–2022)", engines: ["1.8 / 2.0 / 2.3 / 2.5 Duratec / EcoBoost", "1.8 / 2.0 / 2.2 TDCi & EcoBlue (66–154 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "Focus Mk2 / Mk3 / Mk4 (2004–2026)", engines: ["1.4 / 1.6 / 2.0 Duratec Ti-VCT", "1.0 / 1.5 / 1.6 / 2.0 EcoBoost", "1.5 / 1.6 / 1.8 / 2.0 TDCi & EcoBlue (66–140 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "Kuga / Galaxy / S-Max / Transit (2000–2026)", engines: ["2.0 TDCi / EcoBlue (85–140 kW)", "2.2 TDCi (92–147 kW)", "1.5 / 2.0 EcoBoost / Hybrid", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Hyundai": {
         code: "HYU",
         models: [
-          { name: "Accent / Elantra XD (1994–2006)", engines: ["1.5 CRDi (60 kW / D3EA)", "2.0 CRDi (83 kW / D4EA)"] },
-          { name: "Tucson JM (2004–2010)", engines: ["2.0 CRDi (83/103 kW / D4EA)", "2.0 16V (104 kW / G4GC)"] },
-          { name: "i30 FD / GD / PD (2007–2025)", engines: ["1.6 CRDi (66/81/85/100 kW)", "1.4 / 1.5 T-GDI (103/118 kW)"] },
-          { name: "Tucson TL / NX4 (2015–2026)", engines: ["1.7 / 1.6 CRDi (85/100 kW)", "1.6 T-GDI / Hybrid (110–169 kW)"] }
+          { name: "Accent / Elantra / Getz / Matrix (1994–2011)", engines: ["1.3 / 1.4 / 1.5 / 1.6 / 2.0", "1.5 CRDi / 2.0 CRDi (60–103 kW / D3EA/D4EA)", CUSTOM_ENGINE_LABEL] },
+          { name: "Tucson JM / ix35 (2004–2015)", engines: ["2.0 16V / 1.6 GDi", "2.0 CRDi (83/100/103/135 kW / D4EA/D4HA)", "1.7 CRDi (85 kW / D4FD)", CUSTOM_ENGINE_LABEL] },
+          { name: "i30 FD / GD / PD (2007–2025)", engines: ["1.4 / 1.6 CVVT / GDi", "1.0 / 1.4 / 1.5 T-GDI (88–118 kW)", "1.6 CRDi (66/81/85/94/100 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "Tucson TL / NX4 / Santa Fe (2015–2026)", engines: ["1.6 / 1.7 / 2.0 CRDi", "1.6 T-GDI / Hybrid / Plug-in Hybrid", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Kia": {
         code: "KIA",
         models: [
-          { name: "Sportage JE (2004–2010)", engines: ["2.0 CRDi (83/103 kW / D4EA)", "2.0 16V (104 kW / G4GC)"] },
-          { name: "Ceed ED / JD / CD (2006–2025)", engines: ["1.6 CRDi (85/94/100 kW)", "1.6 GDi / 1.5 T-GDi"] },
-          { name: "Sorento BL / XM / UM / MQ4 (2002–2026)", engines: ["2.5 CRDi (103/125 kW)", "2.2 CRDi (145/147/148 kW)"] }
+          { name: "Rio / Cerato / Carens (2000–2018)", engines: ["1.4 / 1.6 / 2.0", "1.5 / 1.6 / 2.0 CRDi", CUSTOM_ENGINE_LABEL] },
+          { name: "Sportage JE / SL / QL / NQ5 (2004–2026)", engines: ["1.6 / 2.0 GDi / T-GDI / Hybrid", "1.7 / 2.0 CRDi (85–136 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "Ceed ED / JD / CD (2006–2025)", engines: ["1.4 / 1.6 CVVT / GDi / 1.0 / 1.4 / 1.5 T-GDI", "1.6 CRDi (66/81/85/94/100 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "Sorento BL / XM / UM / MQ4 (2002–2026)", engines: ["2.5 CRDi (103/125 kW)", "2.2 CRDi (145/147/148 kW)", "Hybrid / Plug-in Hybrid", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Peugeot": {
         code: "PEU",
         models: [
-          { name: "205 / 309 / 405 (1983–1997)", engines: ["1.8 / 1.9 D / TD (XUD7 / XUD9)", "1.4 / 1.6 (TU3 / XU5)"] },
-          { name: "206 / 306 / 406 (1993–2006)", engines: ["2.0 HDi (66/80 kW / RHY/RHS)", "1.4 / 1.6 (TU3/TU5)"] },
-          { name: "307 / 407 (2001–2011)", engines: ["1.6 HDi (66/80 kW / 9HX/9HZ)", "2.0 HDi (100/103 kW / RHR/RHH)"] },
-          { name: "308 / 3008 / 5008 (2013–2026)", engines: ["1.6 / 1.5 BlueHDi (73/88/96 kW)", "1.2 PureTech / Hybrid (96/100 kW)"] }
+          { name: "205 / 306 / 405 / 406 (1983–2004)", engines: ["1.1 / 1.4 / 1.6 / 1.8 / 2.0 (TU / XU)", "1.8 / 1.9 D / TD (XUD7 / XUD9)", "2.0 HDi (66/80 kW / RHY/RHS/RHZ)", CUSTOM_ENGINE_LABEL] },
+          { name: "206 / 207 / 307 / 407 (1998–2012)", engines: ["1.4 / 1.6 16V / VTi", "1.4 / 1.6 HDi (50/66/68/80/82 kW)", "2.0 HDi (79/100/103/120 kW / RHR/RHH/RHF)", CUSTOM_ENGINE_LABEL] },
+          { name: "208 / 308 / 508 / 3008 / 5008 (2012–2026)", engines: ["1.2 PureTech / Hybrid (60–100 kW)", "1.6 THP / PureTech", "1.5 / 1.6 / 2.0 BlueHDi (73/75/88/96/110/130 kW)", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Renault": {
         code: "REN",
         models: [
-          { name: "Clio I / Mégane I / Scénic I (1990–2003)", engines: ["1.9 dTi (59/72 kW / F9Q)", "1.9 D (47 kW / F8Q)", "1.6 16V (79 kW / K4M)"] },
-          { name: "Laguna II / Mégane II (2001–2009)", engines: ["1.9 dCi (74/88/96 kW / F9Q)", "1.5 dCi (60/74/78 kW / K9K)"] },
-          { name: "Mégane III / IV / Captur / Kadjar (2008–2026)", engines: ["1.5 dCi / Blue dCi (66/81/85 kW)", "1.6 dCi (96 kW / R9M)", "1.3 TCe (103/116 kW)"] }
+          { name: "Clio I / II / Mégane I / Scénic I (1990–2003)", engines: ["1.2 / 1.4 / 1.6 / 1.8 / 2.0 (E7F/K7M/K4M/F4R)", "1.9 D / 1.9 dTi (47/59/72 kW / F8Q/F9Q)", CUSTOM_ENGINE_LABEL] },
+          { name: "Laguna II / Mégane II / Scénic II (2001–2009)", engines: ["1.6 16V / 2.0 16V / 2.0 Turbo (K4M/F4R)", "1.5 dCi (60/63/74/76/78 kW / K9K)", "1.9 dCi (68/74/81/88/96 kW / F9Q)", "2.0 dCi (110/127/131 kW / M9R)", CUSTOM_ENGINE_LABEL] },
+          { name: "Mégane III–IV / Laguna III / Talisman / Kadjar / Captur (2008–2026)", engines: ["1.2 / 1.3 TCe / Hybrid", "1.5 dCi / Blue dCi (66/70/81/85 kW / K9K)", "1.6 dCi (96/118 kW / R9M)", "2.0 dCi (96–131 kW / M9R)", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Volvo": {
         code: "VOL",
         models: [
-          { name: "240 / 740 / 850 / S70 / V70 I (1975–2000)", engines: ["2.5 TDI (103 kW / D5252T)", "2.0 / 2.3 / 2.4 (B200/B230/B5252)"] },
-          { name: "V70 / S60 I (2000–2009)", engines: ["2.4 D5 (120/136 kW / D5244T)", "2.4 (103/125 kW)"] },
-          { name: "XC90 I (2002–2014)", engines: ["D5 (120/136/147 kW / D5244T)", "2.5T (154 kW / B5254T2)"] },
-          { name: "V60 / XC60 / XC90 II (2010–2026)", engines: ["D4 / D5 (133/140/165/173 kW)", "B4 / B5 / T8 Hybrid"] }
+          { name: "240 / 740 / 850 / S70 / V70 I (1975–2000)", engines: ["2.0 / 2.3 / 2.4 / 2.5 (B200/B230/B5252/B5254)", "2.4 D / 2.5 TDI (D24/D5252T)", CUSTOM_ENGINE_LABEL] },
+          { name: "S60 I / V70 II / XC70 (2000–2009)", engines: ["2.4 / 2.4T / T5 / 2.5T", "2.4 D / D5 (93/96/120/136 kW / D5244T)", CUSTOM_ENGINE_LABEL] },
+          { name: "XC90 I (2002–2014)", engines: ["D5 (120/136/147 kW / D5244T)", "2.5T / 3.2 / T6 / V8", CUSTOM_ENGINE_LABEL] },
+          { name: "V40 / S60 II–III / V60 / XC60 / XC90 II (2010–2026)", engines: ["1.6 / 2.0 D2 / D3 / D4 / D5 (84–173 kW)", "T3 / T4 / T5 / T6 / B4 / B5 / T8 Recharge", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Opel": {
         code: "OPE",
         models: [
-          { name: "Kadett E / Astra F (1984–1998)", engines: ["1.7 D / TD (42/50/60 kW)", "1.6 8V / 16V (52/55/74 kW)"] },
-          { name: "Astra G / Vectra B / Zafira A (1998–2005)", engines: ["2.0 DTI (74 kW / Y20DTH)", "2.2 DTI (92 kW / Y22DTR)", "1.6 16V (74 kW / Z16XE)"] },
-          { name: "Astra H / Vectra C / Zafira B (2004–2014)", engines: ["1.7 CDTI (74/81/92 kW)", "1.9 CDTI (74/88/110 kW / Z19DT/Z19DTH)"] },
-          { name: "Astra J / Astra K / Insignia (2009–2026)", engines: ["1.6 / 2.0 CDTI (81/100/118/125 kW)", "1.4 Turbo / 1.5 Turbo"] }
+          { name: "Kadett E / Astra F / Vectra A (1984–1998)", engines: ["1.4 / 1.6 / 1.8 / 2.0 (C14NZ/X16SZ/X16XEL/C20NE/X20XEV)", "1.7 D / 1.7 TD (42/44/50/60 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "Astra G / Vectra B / Zafira A (1998–2005)", engines: ["1.6 / 1.8 / 2.0 / 2.2 (X16XEL/Z16XE/X18XE1/Z18XE/Z20LET)", "1.7 DTI / 2.0 DTI / 2.2 DTI (55/74/85/92 kW / Y17DT/Y20DTH/Y22DTR)", CUSTOM_ENGINE_LABEL] },
+          { name: "Astra H / Vectra C / Zafira B (2004–2014)", engines: ["1.4 / 1.6 / 1.8 / 2.0 Turbo (Z16XER/Z18XER/Z20LEL)", "1.3 / 1.7 / 1.9 CDTI (66/74/81/88/92/110 kW / Z19DT/Z19DTH)", CUSTOM_ENGINE_LABEL] },
+          { name: "Astra J / Astra K / Astra L / Insignia / Mokka (2009–2026)", engines: ["1.4 / 1.5 / 1.6 Turbo / Hybrid", "1.6 / 2.0 CDTI (70/81/88/96/100/118/125/143 kW)", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Citroën": {
         code: "CIT",
         models: [
-          { name: "BX / Xsara / Saxo (1982–2004)", engines: ["1.9 D / TD (51/66 kW)", "1.4 / 1.6 (TU3 / TU5)"] },
-          { name: "C4 I / C5 I–II (2000–2008)", engines: ["1.6 HDi (66/80 kW)", "2.0 HDi (80/100 kW)"] },
-          { name: "C4 II / C5 X7 / Berlingo (2008–2026)", engines: ["1.6 / 1.5 BlueHDi (73/88/96 kW)", "2.0 BlueHDi (110/130 kW)"] }
+          { name: "BX / Saxo / Xsara / Xantia (1982–2004)", engines: ["1.1 / 1.4 / 1.6 / 1.8 / 2.0", "1.8 / 1.9 D / TD / 2.0 HDi (44–80 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "C3 / C4 I / C5 I–II / Picasso (2000–2010)", engines: ["1.4 / 1.6 / 2.0", "1.4 / 1.6 / 2.0 HDi (50/66/80/100 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "C4 II–III / C5 X7 / C5 Aircross / Berlingo (2008–2026)", engines: ["1.2 PureTech / Hybrid", "1.5 / 1.6 / 2.0 BlueHDi (73/75/88/96/110/130 kW)", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Seat": {
         code: "SEA",
         models: [
-          { name: "Ibiza II / Córdoba / Toledo I (1993–1999)", engines: ["1.9 TDI (66/81 kW / 1Z/AFN)", "1.9 D (47/50 kW)"] },
-          { name: "Leon 1M / Toledo II (1999–2006)", engines: ["1.9 TDI (66/81/96/110 kW)", "1.6 16V (77 kW / AUS/AZD)"] },
-          { name: "Leon 1P / 5F / KL & Ateca (2005–2026)", engines: ["1.9 / 1.6 TDI (77/81/85 kW)", "2.0 TDI (103/110/135/147 kW)", "1.5 TSI (110 kW)"] }
+          { name: "Ibiza II / Córdoba / Toledo I (1993–1999)", engines: ["1.4 / 1.6 / 1.8 / 2.0", "1.9 D / SDI / TDI (47/50/66/81 kW / 1Z/AFN)", CUSTOM_ENGINE_LABEL] },
+          { name: "Leon 1M / Toledo II (1999–2006)", engines: ["1.4 / 1.6 / 1.8 / 1.8T / 2.3 V5", "1.9 TDI (66/74/81/96/110 kW / AGR/ALH/ASV/ASZ/ARL)", CUSTOM_ENGINE_LABEL] },
+          { name: "Leon 1P / 5F / KL & Ateca / Ibiza (2005–2026)", engines: ["1.2 / 1.4 / 1.5 / 1.8 / 2.0 TSI", "1.6 TDI (66/77/81/85 kW)", "1.9 / 2.0 TDI (77/103/110/125/135/140/147 kW)", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Honda": {
         code: "HON",
         models: [
-          { name: "Civic EG / EK / EJ (1991–2001)", engines: ["1.4 / 1.5 / 1.6 VTEC (D14 / D15 / D16)"] },
-          { name: "Accord VII / Civic VII–VIII (2001–2011)", engines: ["2.2 i-CTDi (103 kW / N22A1)", "2.0 / 2.4 i-VTEC (K20 / K24)"] },
-          { name: "CR-V / Civic X–XI (2007–2026)", engines: ["1.6 / 2.2 i-DTEC (88/110/118 kW)", "1.5 VTEC Turbo / e:HEV Hybrid"] }
+          { name: "Civic EG / EK / EJ / MB (1991–2001)", engines: ["1.4 / 1.5 / 1.6 i / VTEC (D14/D15/D16/B16)", "2.0 TDi (63/77 kW / Rover)", CUSTOM_ENGINE_LABEL] },
+          { name: "Civic VII–VIII / Accord VII–VIII (2001–2015)", engines: ["1.4 / 1.6 / 1.8 i-VTEC / 2.0 / 2.4 i-VTEC (R18/K20/K24)", "1.7 CTDi (74 kW) / 2.2 i-CTDi / i-DTEC (103/110/132 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "CR-V / Civic X–XI / HR-V (2007–2026)", engines: ["1.6 / 2.2 i-DTEC (88/110/118 kW)", "1.5 VTEC Turbo / 2.0 e:HEV Hybrid", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Nissan": {
         code: "NIS",
         models: [
-          { name: "Primera P10 / P11 / Almera N15–N16 (1990–2006)", engines: ["2.0 TD / Di (55/66/81 kW)", "1.6 / 1.8 / 2.0 (GA16 / SR20)"] },
-          { name: "X-Trail T30 / T31 / Qashqai J10 (2001–2013)", engines: ["2.0 / 2.2 dCi (84/100/110/127 kW)"] },
-          { name: "Qashqai J11–J12 / X-Trail T32–T33 (2014–2026)", engines: ["1.5 / 1.6 / 1.7 dCi (81/96/110 kW)", "1.3 DIG-T / e-POWER"] }
+          { name: "Micra / Almera N15–N16 / Primera P10–P11 (1990–2006)", engines: ["1.4 / 1.5 / 1.6 / 1.8 / 2.0 (GA/QG/SR)", "2.0 D / TD / Di (55/66/74/81 kW / CD20/YD22)", CUSTOM_ENGINE_LABEL] },
+          { name: "X-Trail T30 / T31 / Qashqai J10 (2001–2013)", engines: ["1.5 / 1.6 / 2.0 dCi (76/78/81/96/110/127 kW / K9K/M9R/YD22)", "1.6 / 2.0 Benzín", CUSTOM_ENGINE_LABEL] },
+          { name: "Qashqai J11–J12 / X-Trail T32–T33 (2014–2026)", engines: ["1.5 / 1.6 / 1.7 dCi (81/96/110 kW)", "1.2 / 1.3 DIG-T / e-POWER", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Mazda": {
         code: "MAZ",
         models: [
-          { name: "323 / 626 (1989–2002)", engines: ["2.0 DiTD / Comprex", "1.6 / 1.8 / 2.0"] },
-          { name: "Mazda 3 BK / BL / BM / BP (2003–2026)", engines: ["1.6 / 2.0 / 2.2 CD (80/85/103/110 kW)", "2.0 Skyactiv-G / Skyactiv-X"] },
-          { name: "Mazda 6 GG / GH / GJ (2002–2024)", engines: ["2.0 / 2.2 CD (89/103/110/129 kW)", "2.0 / 2.5 Skyactiv"] }
+          { name: "323 / 626 / Premacy (1989–2005)", engines: ["1.5 / 1.6 / 1.8 / 2.0 Benzín", "2.0 DiTD / CD (66/74/81/89/100 kW / RF)", CUSTOM_ENGINE_LABEL] },
+          { name: "Mazda 3 BK / BL / BM / BP (2003–2026)", engines: ["1.4 / 1.6 / 2.0 / 2.3 Benzín & Skyactiv-G / Skyactiv-X", "1.6 / 2.2 CD / Skyactiv-D (80/85/105/110/136 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "Mazda 6 GG / GH / GJ & CX-5 (2002–2026)", engines: ["1.8 / 2.0 / 2.3 / 2.5 Benzín & Skyactiv", "2.0 / 2.2 CD / Skyactiv-D (89/103/110/120/129/135 kW)", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Fiat": {
         code: "FIA",
         models: [
-          { name: "Punto Mk1 / Mk2 / Bravo–Brava (1993–2007)", engines: ["1.9 JTD (59/74/85 kW)", "1.2 8V / 16V (44/59 kW)"] },
-          { name: "Grande Punto / Bravo II / Ducato (2005–2026)", engines: ["1.3 / 1.6 / 2.0 Multijet (55–130 kW)"] }
+          { name: "Punto Mk1–Mk2 / Bravo / Brava / Marea (1993–2007)", engines: ["1.2 8V / 1.2 16V / 1.4 / 1.6 / 1.8", "1.9 JTD (59/74/77/85/88 kW)", CUSTOM_ENGINE_LABEL] },
+          { name: "Grande Punto / Bravo II / Tipo / Doblo / Ducato (2005–2026)", engines: ["1.3 / 1.6 / 2.0 Multijet (55–130 kW)", "1.4 T-Jet / Fire / Hybrid", CUSTOM_ENGINE_LABEL] }
         ]
       },
       "Dacia": {
         code: "DAC",
         models: [
-          { name: "Logan / Sandero / Duster I (2004–2017)", engines: ["1.5 dCi (50/55/63/66/80/81 kW / K9K)", "1.6 MPI / 16V (64/77 kW)"] },
-          { name: "Duster II–III / Sandero III / Jogger (2018–2026)", engines: ["1.5 Blue dCi (70/85 kW)", "1.0 TCe / LPG (67/74 kW)", "Hybrid 140"] }
+          { name: "Logan I–II / Sandero I–II / Duster I (2004–2018)", engines: ["1.2 16V / 1.4 / 1.6 MPI / 1.6 16V / 1.2 TCe", "1.5 dCi (50/55/63/65/66/75/78/80/81 kW / K9K)", CUSTOM_ENGINE_LABEL] },
+          { name: "Duster II–III / Sandero III / Jogger (2018–2026)", engines: ["1.0 TCe / ECO-G LPG (67/74/81 kW)", "1.3 TCe (96/110 kW)", "1.5 Blue dCi (70/85 kW)", "Hybrid 140", CUSTOM_ENGINE_LABEL] }
         ]
       }
     };
@@ -330,11 +346,16 @@
         title: "12V Batéria, alternátor a štartér",
         steps: [
           "Zmerajte napätie batérie v pokoji (správne ~12,5–12,7 V) a pri bežiacom motore (~13,8–14,4 V).",
-          "Skontrolujte ukostrenie motora, karosérie a svorky na oxidáciu.",
-          "Pri novších autách so Start-Stop po výmene batérie zaregistrujte nový akumulátor."
+          "Skontrolujte ukostrenie motora, karosérie a svorky na oxidáciu alebo uvoľnenie.",
+          "Pri novších autách so Start-Stop / BMS po výmene batérie zaregistrujte nový akumulátor."
         ],
-        diy: "85 – 160 €",
-        service: "130 – 240 €"
+        partsList: [
+          "12V autobatéria (AGM / EFB / štandardná podľa výbavy)",
+          "Alternátor alebo regulátor napätia / voľnobežka",
+          "Štartér, ukostrovací kábel a svorky pólu"
+        ],
+        diy: "85 – 190 €",
+        service: "130 – 280 €"
       },
       engine: {
         title: "Motor, rozvody a snímače",
@@ -343,8 +364,13 @@
           "Pri podozrení na nepravidelný chod skontrolujte palivový systém, zapaľovanie alebo snímač vačky/kľuky.",
           "Dodržte interval výmeny rozvodov a vodnej pumpy podľa ročníka a kódu motora."
         ],
-        diy: "60 – 320 €",
-        service: "180 – 750 €"
+        partsList: [
+          "Rozvodová sada (remeň alebo reťaz + kladky) + vodná pumpa",
+          "Motorový olej, olejový/vzduchový/palivový filter",
+          "Zapaľovacie sviečky / cievky alebo žhaviče + snímač otáčok"
+        ],
+        diy: "60 – 360 €",
+        service: "180 – 850 €"
       },
       brakes: {
         title: "Brzdový systém a podvozok",
@@ -353,8 +379,13 @@
           "Prezrite silentbloky ramien, čapy riadenia, tyčky stabilizátora a manžety poloos.",
           "Pri pískaní alebo trasení pri brzdení skontrolujte rovnomerné opotrebenie oboch strán."
         ],
-        diy: "50 – 220 €",
-        service: "120 – 420 €"
+        partsList: [
+          "Brzdové kotúče a platničky (predná alebo zadná náprava)",
+          "Rameno / silentbloky, čap riadenia, tyčky stabilizátora",
+          "Brzdová kvapalina DOT 4 / manžeta poloosi"
+        ],
+        diy: "50 – 240 €",
+        service: "120 – 450 €"
       },
       exhaust: {
         title: "Výfuk, EGR ventil a DPF / katalyzátor",
@@ -363,8 +394,13 @@
           "Pri starších autách sledujte zanášanie EGR ventilu, pri novších autách stav DPF a aditíva/AdBlue.",
           "Pred výmenou drahých dielov overte únik vzduchu v sacom potrubí."
         ],
-        diy: "45 – 260 €",
-        service: "120 – 650 €"
+        partsList: [
+          "EGR ventil / chladič spalín + tesnenia",
+          "Snímač diferenčného tlaku DPF / lambda sonda / snímač teploty",
+          "Pružný výfukový dielec, silentbloky výfuku alebo čistič DPF/EGR"
+        ],
+        diy: "45 – 280 €",
+        service: "120 – 700 €"
       }
     };
 
@@ -372,7 +408,17 @@
     let selectedBrand = "Škoda";
     let selectedModelIdx = 0;
     let selectedEngineIdx = 0;
+    let customEngineText = "";
     let selectedPart = "battery";
+
+    function getActiveEngineLabel() {
+      const engines = DB[selectedBrand].models[selectedModelIdx].engines;
+      const current = engines[selectedEngineIdx] || engines[0];
+      if (current === CUSTOM_ENGINE_LABEL) {
+        return customEngineText.trim() || "Vlastná motorizácia (nezadaný kód/kW)";
+      }
+      return current;
+    }
 
     function renderBrands(filterText = "") {
       const grid = document.getElementById("brandGrid");
@@ -424,14 +470,27 @@
       engineSelect.innerHTML = engines.map((e, i) => `<option value="${i}" ${i === selectedEngineIdx ? "selected" : ""}>${e}</option>`).join("");
       engineSelect.onchange = () => {
         selectedEngineIdx = Number(engineSelect.value);
+        toggleCustomEngineBox();
         updateBanner();
       };
+      toggleCustomEngineBox();
       updateBanner();
+    }
+
+    function toggleCustomEngineBox() {
+      const engines = DB[selectedBrand].models[selectedModelIdx].engines;
+      const isCustom = engines[selectedEngineIdx] === CUSTOM_ENGINE_LABEL;
+      const box = document.getElementById("customEngineBox");
+      box.classList.toggle("hidden", !isCustom);
+      box.classList.toggle("grid", isCustom);
+      if (isCustom) {
+        document.getElementById("customEngineInput").value = customEngineText;
+      }
     }
 
     function updateBanner() {
       const modelName = DB[selectedBrand].models[selectedModelIdx].name;
-      const engineName = DB[selectedBrand].models[selectedModelIdx].engines[selectedEngineIdx];
+      const engineName = getActiveEngineLabel();
       document.getElementById("activeVehicleBanner").innerHTML = `
         <div><span class="text-slate-400">Aktívne vozidlo:</span> <strong class="text-amber-300">${selectedBrand} ${modelName}</strong></div>
         <div class="font-mono text-xs text-slate-300">${engineName}</div>
@@ -447,7 +506,7 @@
     function renderPartCard() {
       const p = PARTS[selectedPart];
       const modelName = DB[selectedBrand].models[selectedModelIdx].name;
-      const engineName = DB[selectedBrand].models[selectedModelIdx].engines[selectedEngineIdx];
+      const engineName = getActiveEngineLabel();
       document.getElementById("partDetailCard").innerHTML = `
         <div class="text-xs text-amber-400 font-semibold">${selectedBrand} • ${modelName}</div>
         <h3 class="text-lg font-bold">${p.title}</h3>
@@ -455,6 +514,12 @@
         <ol class="list-decimal list-inside space-y-2 text-sm text-slate-200 pt-1">
           ${p.steps.map(s => `<li>${s}</li>`).join("")}
         </ol>
+        <div class="pt-2">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Súvisiace diely pre uzol</div>
+          <ul class="list-disc list-inside space-y-1 text-xs sm:text-sm text-slate-300">
+            ${p.partsList.map(item => `<li>${item}</li>`).join("")}
+          </ul>
+        </div>
         <div class="grid grid-cols-2 gap-2.5 pt-2">
           <div class="rounded-xl bg-emerald-950/50 border border-emerald-700/40 p-3">
             <div class="text-[11px] text-emerald-300">Svojpomocne (diel)</div>
@@ -467,6 +532,18 @@
         </div>
       `;
     }
+
+    document.getElementById("applyCustomEngineBtn").addEventListener("click", () => {
+      customEngineText = document.getElementById("customEngineInput").value;
+      updateBanner();
+    });
+
+    document.getElementById("customEngineInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        customEngineText = e.target.value;
+        updateBanner();
+      }
+    });
 
     document.getElementById("brandFilter").addEventListener("input", (e) => renderBrands(e.target.value));
     renderBrands();
